@@ -12,7 +12,9 @@ export default async function AppLayout({
   const session = await getServerSession();
   const user = session?.user;
 
-  if (!user) unauthorized();
+  console.log("USER", user);
+
+  if (!session) unauthorized();
 
   return (
     <SidebarProvider
