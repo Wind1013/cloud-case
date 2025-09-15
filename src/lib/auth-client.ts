@@ -1,10 +1,12 @@
 import { inferAdditionalFields } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
+import { auth } from "./auth";
+import { nextCookies } from "better-auth/next-js";
 
 export const { signIn, signUp, signOut, useSession, getSession } =
   createAuthClient({
     plugins: [
-      inferAdditionalFields({
+      inferAdditionalFields<typeof auth>({
         user: {
           role: {
             type: "string",
@@ -12,5 +14,6 @@ export const { signIn, signUp, signOut, useSession, getSession } =
           },
         },
       }),
+      nextCookies(),
     ],
   });
