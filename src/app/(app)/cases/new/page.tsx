@@ -6,7 +6,7 @@ async function CasesPage() {
   const clients = await getUsers({ role: "CLIENT" });
 
   return (
-    <div className="max-w-7xl mx-auto p-8 rounded-xl shadow-lg bg-gray-50 border border-gray-200 mt-10">
+    <div className="max-h-screen overflow-y-auto max-w-7xl mx-auto p-8 rounded-xl shadow-lg bg-gray-50 border border-gray-200 mt-10">
       <CaseClient clients={clients} />
     </div>
   );

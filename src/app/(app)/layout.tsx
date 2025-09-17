@@ -1,10 +1,8 @@
+import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
-import { forbidden, redirect, unauthorized } from "next/navigation";
 import { getServerSession } from "@/lib/get-session";
+import { unauthorized } from "next/navigation";
 
 export default async function AppLayout({
   children,
@@ -28,7 +26,7 @@ export default async function AppLayout({
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        {children}
+        <div className="flex-1 overflow-auto">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
