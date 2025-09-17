@@ -22,7 +22,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { User } from "@/generated/prisma";
-import { FileText, Scale, UserCheck, Users } from "lucide-react";
+import { FileText, Scale, Type, UserCheck, Users } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -70,7 +70,7 @@ export default function CaseFilingForm({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="mx-auto p-6">
       <div className="mb-8 text-center">
         <div className="flex items-center justify-center mb-4">
           <Scale className="h-8 w-8 text-primary mr-3" />
@@ -118,7 +118,10 @@ export default function CaseFilingForm({
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Case Title *</FormLabel>
+                        <FormLabel>
+                          <Type className="h-4 w-4 mr-1 text-accent" />
+                          Case Title *
+                        </FormLabel>
                         <Input
                           placeholder="Enter a descriptive case title"
                           {...field}
@@ -148,7 +151,7 @@ export default function CaseFilingForm({
                 {/* Assignment Section */}
                 <div className="space-y-6">
                   <div className="border-l-4 border-accent pl-4">
-                    <h3 className="text-lg font-semibold text-foreground mb-1">
+                    <h3 className="text-lg font-semibold text-foreground mb-0.5">
                       Case Assignment
                     </h3>
                     <p className="text-sm text-muted-foreground">
@@ -160,16 +163,16 @@ export default function CaseFilingForm({
                     control={form.control}
                     name="clientId"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="w-full">
                         <FormLabel className="flex items-center">
-                          <Users className="h-4 w-4 mr-2 text-accent" />
+                          <Users className="h-4 w-4 mr-1 text-accent" />
                           Client *
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
                         >
-                          <FormControl>
+                          <FormControl className="w-full">
                             <SelectTrigger>
                               <SelectValue placeholder="Select a client" />
                             </SelectTrigger>
