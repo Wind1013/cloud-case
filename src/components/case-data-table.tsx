@@ -99,7 +99,6 @@ export const caseSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
   status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "DISMISSED"]),
-  lawyerId: z.string(),
   clientId: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -204,13 +203,13 @@ const columns: ColumnDef<CaseData>[] = [
       );
     },
   },
-  {
-    accessorKey: "lawyerId",
-    header: "Lawyer",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.original.lawyerId}</div>
-    ),
-  },
+  // {
+  //   accessorKey: "lawyerId",
+  //   header: "Lawyer",
+  //   cell: ({ row }) => (
+  //     <div className="font-medium">{row.original.lawyerId}</div>
+  //   ),
+  // },
   {
     accessorKey: "clientId",
     header: "Client",
@@ -581,10 +580,10 @@ function CaseCellViewer({ item }: { item: CaseData }) {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex flex-col gap-3">
+              {/* <div className="flex flex-col gap-3">
                 <Label htmlFor="lawyer">Lawyer</Label>
                 <Input id="lawyer" defaultValue={item.lawyerId} />
-              </div>
+              </div> */}
             </div>
             <div className="flex flex-col gap-3">
               <Label htmlFor="client">Client</Label>

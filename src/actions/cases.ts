@@ -1,17 +1,15 @@
 "use server";
 
+import { getAuthSession } from "@/data/auth";
 import { Case } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { getAuthSession } from "./session";
 
-export type CreateCase = Pick<
-  Case,
-  "title" | "description" | "clientId" | "lawyerId"
->;
+export type CreateCase = Pick<Case, "title" | "description" | "clientId">;
 export async function createCase(formData: CreateCase) {
+  await getAuthSession();
   try {
-    const { title, description, clientId, lawyerId } = formData;
+    const { title, description, clientId } = formData;
 
     const newCase = await prisma.case.create({
       data: {
@@ -19,7 +17,6 @@ export async function createCase(formData: CreateCase) {
         description,
         status: "PENDING",
         clientId,
-        lawyerId,
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -33,6 +30,7 @@ export async function createCase(formData: CreateCase) {
 }
 
 export async function updateCase(id: string, formData: Partial<CreateCase>) {
+  await getAuthSession();
   try {
     const updatedCase = await prisma.case.update({
       where: { id },
@@ -44,42 +42,6 @@ export async function updateCase(id: string, formData: Partial<CreateCase>) {
 
     revalidatePath("/cases");
     return { success: true, data: updatedCase };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-}
-
-export async function getCases() {
-  const session = await getAuthSession();
-
-  try {
-    const cases = await prisma.case.findMany({
-      where: {},
-      include: {
-        client: true,
-        lawyer: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-    return { success: true, data: cases };
-  } catch (error) {
-    return { success: false, error: (error as Error).message };
-  }
-}
-
-export async function getCaseById(id: string) {
-  try {
-    const caseData = await prisma.case.findUnique({
-      where: {
-        id: id,
-      },
-    });
-    if (!caseData) {
-      return { success: false, error: "Case not found" };
-    }
-    return { success: true, data: caseData };
   } catch (error) {
     return { success: false, error: (error as Error).message };
   }

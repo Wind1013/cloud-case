@@ -30,12 +30,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTransition } from "react";
 
 const caseSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   clientId: z.string().min(1, { message: "Client is required" }),
-  lawyerId: z.string().min(1, { message: "Lawyer is required" }),
   // document: z.string().optional(),
 });
 
@@ -43,12 +43,10 @@ export type CaseFormValues = z.infer<typeof caseSchema>;
 
 export default function CaseFilingForm({
   clients,
-  lawyers,
   onSubmit,
   initialData,
 }: {
   clients: User[];
-  lawyers: User[];
   onSubmit: (data: CaseFormValues) => void;
   initialData?: CaseFormValues;
 }) {
@@ -58,12 +56,12 @@ export default function CaseFilingForm({
       title: "",
       description: "",
       clientId: "",
-      lawyerId: "",
     },
   });
+  const [isPending, startTransition] = useTransition();
 
   async function onPrepareSubmit(values: CaseFormValues) {
-    onSubmit(values);
+    startTransition(() => onSubmit(values));
   }
 
   function handleReset() {
@@ -188,45 +186,6 @@ export default function CaseFilingForm({
                       </FormItem>
                     )}
                   />
-
-                  <FormField
-                    control={form.control}
-                    name="lawyerId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center">
-                          <UserCheck className="h-4 w-4 mr-2 text-accent" />
-                          Assigned Lawyer *
-                        </FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select an attorney" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {lawyers.map(lawyer => (
-                              <SelectItem key={lawyer.id} value={lawyer.id}>
-                                {lawyer.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="bg-muted/50 border border-border rounded-lg p-4">
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Note:</strong> The assigned lawyer will be
-                      notified immediately upon case submission and will have
-                      full access to case details and documentation.
-                    </p>
-                  </div>
                 </div>
               </div>
 
@@ -234,6 +193,7 @@ export default function CaseFilingForm({
                 <Button
                   type="submit"
                   className="flex-1 sm:flex-none sm:min-w-[200px] h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                  loading={isPending}
                 >
                   Submit Case Filing
                 </Button>
@@ -242,6 +202,7 @@ export default function CaseFilingForm({
                   variant="outline"
                   onClick={handleReset}
                   className="flex-1 sm:flex-none sm:min-w-[120px] h-12 border-border hover:bg-muted bg-transparent"
+                  disabled={isPending}
                 >
                   Reset
                 </Button>

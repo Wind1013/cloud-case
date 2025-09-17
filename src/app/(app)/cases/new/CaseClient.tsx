@@ -6,13 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import CaseFilingForm, { CaseFormValues } from "../CaseFilingForm";
 
-export default function CaseClient({
-  clients,
-  lawyers,
-}: {
-  clients: User[];
-  lawyers: User[];
-}) {
+export default function CaseClient({ clients }: { clients: User[] }) {
   const router = useRouter();
 
   async function onSubmit(values: CaseFormValues) {
@@ -29,7 +23,5 @@ export default function CaseClient({
     }
   }
 
-  return (
-    <CaseFilingForm clients={clients} lawyers={lawyers} onSubmit={onSubmit} />
-  );
+  return <CaseFilingForm clients={clients} onSubmit={onSubmit} />;
 }

@@ -1,7 +1,7 @@
 import { CaseDataTable } from "@/components/case-data-table";
 import React from "react";
 import { generateMockCaseData } from "./mock-data";
-import { getCases } from "@/actions/cases";
+import { getCases } from "@/data/cases";
 
 async function Cases() {
   const caseData = generateMockCaseData();
@@ -15,7 +15,6 @@ async function Cases() {
     id: item.id,
     title: item.title,
     description: item.description || "",
-    lawyerId: item.lawyer.name,
     clientId: item.client.name,
     status: "IN_PROGRESS" as
       | "PENDING"

@@ -50,7 +50,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
-  lawyerCases    Case[] @relation("LawyerCases")
+  // lawyerCases    Case[] @relation("LawyerCases")
   clientCases    Case[] @relation("ClientCases")
 
   @@unique([email])
@@ -107,12 +107,12 @@ model Case {
   title       String
   description String?
   status      CaseStatus @default(PENDING)
-  lawyerId    String
+  // lawyerId    String
   clientId    String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  lawyer      User         @relation("LawyerCases", fields: [lawyerId], references: [id])
+  // lawyer      User         @relation("LawyerCases", fields: [lawyerId], references: [id])
   client      User         @relation("ClientCases", fields: [clientId], references: [id])
   // tasks       Task[]
   // documents   Document[]
