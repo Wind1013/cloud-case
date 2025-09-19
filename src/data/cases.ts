@@ -28,6 +28,9 @@ export async function getCaseById(id: string) {
       where: {
         id: id,
       },
+      include: {
+        client: true,
+      },
     });
     if (!caseData) {
       return { success: false, error: "Case not found" };
