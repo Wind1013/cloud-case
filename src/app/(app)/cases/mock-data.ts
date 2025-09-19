@@ -89,7 +89,6 @@ export function generateMockCaseData(): CaseData[] {
           ? descriptions[Math.floor(Math.random() * descriptions.length)]
           : undefined,
       status: statuses[Math.floor(Math.random() * statuses.length)],
-      lawyerId: lawyers[Math.floor(Math.random() * lawyers.length)],
       clientId: clients[Math.floor(Math.random() * clients.length)],
       createdAt: createdDate,
       updatedAt: updatedDate,
