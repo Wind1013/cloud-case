@@ -1,14 +1,18 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Upload, FileText, ImageIcon, Eye, Download } from "lucide-react";
-import React from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UploadDropzoneProgress } from "@/components/ui/upload-dropzone-progress";
+import { useUploadFiles } from "better-upload/client";
+import { Download, Eye, FileText, ImageIcon, Upload } from "lucide-react";
+import { toast } from "sonner";
 
 // Base file interface with common properties
 interface BaseFile {
@@ -57,6 +61,14 @@ interface FlexibleFileData {
 }
 
 const CaseFilesCard = ({ documents, images }: FlexibleFileData) => {
+  const caseId = "cmft4fnlu0007jlgv0b2nc971";
+  const { control } = useUploadFiles({
+    route: "demo",
+    onError: () => {
+      toast.error("Error uploading");
+    },
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -69,6 +81,7 @@ const CaseFilesCard = ({ documents, images }: FlexibleFileData) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <UploadDropzoneProgress control={control} metadata={{ caseId }} />
         <Tabs defaultValue="documents" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger
@@ -85,55 +98,33 @@ const CaseFilesCard = ({ documents, images }: FlexibleFileData) => {
           </TabsList>
 
           <TabsContent value="documents" className="space-y-4">
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
-              <Upload className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-sm font-medium mb-2">
-                Drop documents here or click to upload
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Supports PDF, DOC, DOCX files up to 10MB
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              {documents.map(file => (
-                <div
-                  key={file.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium">{file.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {file.size} • Uploaded {file.uploadedAt}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Download className="h-4 w-4" />
-                    </Button>
+            {documents.map(file => (
+              <div
+                key={file.id}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">{file.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {file.size} • Uploaded {file.uploadedAt}
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Download className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </TabsContent>
 
           <TabsContent value="images" className="space-y-4">
-            <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center bg-muted/20 hover:bg-muted/30 transition-colors cursor-pointer">
-              <ImageIcon className="h-8 w-8 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-sm font-medium mb-2">
-                Drop images here or click to upload
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Supports JPG, PNG, GIF files up to 5MB
-              </p>
-            </div>
-
             <div className="space-y-2">
               {images.map(file => (
                 <div

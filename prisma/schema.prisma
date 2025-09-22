@@ -107,15 +107,29 @@ model Case {
   title       String
   description String?
   status      CaseStatus @default(PENDING)
-  // lawyerId    String
   clientId    String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  // lawyer      User         @relation("LawyerCases", fields: [lawyerId], references: [id])
   client      User         @relation("ClientCases", fields: [clientId], references: [id])
   // tasks       Task[]
-  // documents   Document[]
+  documents   Document[]
   // appointments Appointment[]
   @@map("cases")
+}
+
+
+model Document {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String?
+  size      Int?
+  caseId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
 }
