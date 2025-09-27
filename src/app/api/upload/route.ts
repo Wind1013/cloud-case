@@ -15,7 +15,18 @@ const router: Router = {
   bucketName: config.S3_BUCKET_NAME,
   routes: {
     demo: route({
-      fileTypes: ["image/*"],
+      fileTypes: [
+        "image/*",
+        "application/pdf",
+        "application/msword", // .doc files
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx files
+        "application/vnd.ms-excel", // .xls files
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx files
+        "application/vnd.ms-powerpoint", // .ppt files
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx files
+        "text/plain", // .txt files
+        "application/rtf", // .rtf files
+      ],
       multipleFiles: true,
       maxFiles: 4,
       clientMetadataSchema: z.object({
@@ -34,14 +45,17 @@ const router: Router = {
         }
 
         return {
-          generateObjectInfo: ({ file }) => ({ key: `${caseId}/${file.name}` }),
+          generateObjectInfo: ({ file }) => ({
+            key: `${caseId}/${file.name}`,
+            // acl: "public-read",
+          }),
         };
       },
       onAfterSignedUrl: async ({ files, clientMetadata }) => {
         const { caseId } = clientMetadata;
         const promises = files.map(file =>
           createDocument({
-            caseId: caseId || "cmft4fnlu0007jlgv0b2nc971",
+            caseId: caseId,
             name: file.name,
             size: file.size,
             type: file.type,

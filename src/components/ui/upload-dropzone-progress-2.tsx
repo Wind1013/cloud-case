@@ -1,11 +1,24 @@
+"use client";
+
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { UploadHookControl } from "better-upload/client";
-import { formatBytes } from "better-upload/client/helpers";
-import { Dot, File, Upload } from "lucide-react";
+import {
+  Dot,
+  type File,
+  Upload,
+  FileText,
+  ImageIcon,
+  Eye,
+  Download,
+} from "lucide-react";
 import { useId } from "react";
 import { useDropzone } from "react-dropzone";
-import { toast } from "sonner";
+import {
+  FileUploadInfo,
+  UploadHookControl,
+  UploadStatus,
+} from "better-upload/client";
 
 type UploadDropzoneProgressProps = {
   control: UploadHookControl<true>;
@@ -24,6 +37,20 @@ type UploadDropzoneProgressProps = {
 
   // Add any additional props you need.
 };
+
+function formatBytes(bytes: number, decimals = 2) {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return (
+    Number.parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
+  );
+}
 
 export function UploadDropzoneProgress({
   control: { upload, isPending, progresses },
@@ -44,9 +71,6 @@ export function UploadDropzoneProgress({
         }
       }
       inputRef.current.value = "";
-    },
-    onError(err) {
-      toast.error(err.message);
     },
     noClick: true,
   });
@@ -122,83 +146,68 @@ export function UploadDropzoneProgress({
         )}
       </div>
 
-      <div className="grid gap-2">
-        {progresses.map(progress => (
-          <div
-            key={progress.objectKey}
-            className={cn(
-              "dark:bg-input/10 flex items-center gap-2 rounded-lg border bg-transparent p-3",
-              {
-                "bg-red-500/[0.04]! border-red-500/60":
-                  progress.status === "failed",
-              }
-            )}
-          >
-            <FileIcon type={progress.type} />
-
-            <div className="grid grow gap-1">
-              <div className="flex items-center gap-0.5">
-                <p className="max-w-40 truncate text-sm font-medium">
-                  {progress.name}
-                </p>
-                <Dot className="text-muted-foreground size-4" />
-                <p className="text-muted-foreground text-xs">
-                  {formatBytes(progress.size)}
-                </p>
-              </div>
-
-              <div className="flex h-4 items-center">
-                {progress.progress < 1 && progress.status !== "failed" ? (
-                  <Progress className="h-1.5" value={progress.progress * 100} />
-                ) : progress.status === "failed" ? (
-                  <p className="text-xs text-red-500">Failed</p>
-                ) : (
-                  <p className="text-muted-foreground text-xs">Completed</p>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {progresses.length > 0 && (
+        <div className="space-y-2 w-full">
+          {progresses.map(progress => (
+            <FileProgressItem
+              key={progress.objectKey}
+              progress={progress}
+              type={progress.type.startsWith("image/") ? "image" : "document"}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-const iconCaptions = {
-  "image/": "IMG",
-  "video/": "VID",
-  "audio/": "AUD",
-  "application/pdf": "PDF",
-  "application/zip": "ZIP",
-  "application/x-rar-compressed": "RAR",
-  "application/x-7z-compressed": "7Z",
-  "application/x-tar": "TAR",
-  "application/json": "JSON",
-  "application/javascript": "JS",
-  "text/plain": "TXT",
-  "text/csv": "CSV",
-  "text/html": "HTML",
-  "text/css": "CSS",
-  "application/xml": "XML",
-  "application/x-sh": "SH",
-  "application/x-python-code": "PY",
-  "application/x-executable": "EXE",
-  "application/x-disk-image": "ISO",
-};
-
-function FileIcon({ type }: { type: string }) {
-  const caption = Object.entries(iconCaptions).find(([key]) =>
-    type.startsWith(key)
-  )?.[1];
+function FileProgressItem({
+  progress,
+  type,
+}: {
+  progress: FileUploadInfo<UploadStatus>;
+  type: "document" | "image";
+}) {
+  const getUploadedTime = () => {
+    // For demo purposes, showing "Just now" - in real app this would be actual timestamp
+    return "Just now";
+  };
 
   return (
-    <div className="relative shrink-0">
-      <File className="text-muted-foreground size-12" strokeWidth={1} />
-
-      {caption && (
-        <span className="bg-primary text-primary-foreground absolute bottom-2.5 left-0.5 select-none rounded px-1 py-px text-xs font-semibold">
-          {caption}
-        </span>
+    <div className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+      <div className="flex items-center gap-3">
+        {type === "document" ? (
+          <FileText className="h-5 w-5 text-primary" />
+        ) : (
+          <ImageIcon className="h-5 w-5 text-secondary" />
+        )}
+        <div className="flex-1">
+          <p className="text-sm font-medium">{progress.name}</p>
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span>{formatBytes(progress.size)}</span>
+            <Dot className="size-3" />
+            {progress.progress < 1 && progress.status !== "failed" ? (
+              <span>Uploading... {Math.round(progress.progress * 100)}%</span>
+            ) : progress.status === "failed" ? (
+              <span className="text-red-500">Failed</span>
+            ) : (
+              <span>Uploaded {getUploadedTime()}</span>
+            )}
+          </div>
+          {/* {progress.progress < 1 && progress.status !== "failed" && ( */}
+          <Progress className="h-1.5 mt-2" value={progress.progress * 100} />
+          {/* )} */}
+        </div>
+      </div>
+      {progress.progress >= 1 && progress.status !== "failed" && (
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm">
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="sm">
+            <Download className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   );

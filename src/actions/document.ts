@@ -13,12 +13,10 @@ export async function createDocument(docData: CreateDocument) {
   try {
     const { caseId, name, type, size, url } = docData;
 
-    const storageUrl = `https://${config.S3_BUCKET_NAME}.t3.storage.dev/${url}`;
-
     const newDoc = await prisma.document.create({
       data: {
         name,
-        url: storageUrl,
+        url,
         size,
         type,
         caseId,

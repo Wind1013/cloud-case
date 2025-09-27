@@ -162,7 +162,9 @@ const columns: ColumnDef<CaseData>[] = [
     accessorKey: "title",
     header: "Case Title",
     cell: ({ row }) => {
-      return <CaseCellViewer item={row.original} />;
+      return (
+        <Link href={`/cases/${row.original.id}`}>{row.original.title}</Link>
+      );
     },
     enableHiding: false,
   },

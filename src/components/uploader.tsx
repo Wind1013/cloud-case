@@ -15,12 +15,13 @@ export function Uploader() {
   return (
     <UploadDropzoneProgress
       control={control}
-      accept="image/*, application/pdf"
+      accept="image/*,application/pdf,.pdf,application/msword,.doc,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx,application/vnd.ms-excel,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx,text/plain,.txt"
       description={{
         maxFiles: 4,
         maxFileSize: "5MB",
-        fileTypes: "JPEG, PNG, GIF, PDF",
+        fileTypes: "JPEG, PNG, GIF, PDF, DOC, TXT",
       }}
+      metadata={{ caseId: "cmfwoq6aj000jh9e7ggk73f6w" }}
     />
   );
 }

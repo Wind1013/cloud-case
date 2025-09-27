@@ -26,6 +26,8 @@ import React from "react";
 import CaseClientCard from "../components/CaseClientCard";
 import CaseOverviewCard from "../components/CaseOverviewCard";
 import CaseFilesCard from "../components/CaseFilesCard";
+import type { Case } from "@/generated/prisma";
+import { notFound } from "next/navigation";
 
 type CasePageProps = {
   params: Promise<{ id: string }>;
@@ -34,103 +36,30 @@ type CasePageProps = {
 async function Case({ params }: CasePageProps) {
   const { id } = await params;
 
-  // const data = await getCaseById(id);
+  const data = await getCaseById(id);
 
-  const caseData = {
-    id: "cmfqs40rg0001gied7q78l78p",
-    title: "New Case",
-    description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Dicta dolorum ducimus eum molestiae, ipsam ipsum aliquid veniam harum, natus, rem alias itaque possimus eos et porro eligendi culpa? Vero aliquid non quo itaque porro dignissimos ipsum, sed enim maiores, molestias beatae mollitia, vel repellat eum placeat ex quod esse earum dolor est. Ipsa molestias dolor hic maxime natus dolorem porro aperiam, rem magnam ipsum veritatis temporibus exercitationem quis sit fugiat earum. Vel ipsum illum maiores laboriosam quos ea neque et? Fugiat esse amet totam quia eum obcaecati ratione reprehenderit quos fuga, minima iste molestias corporis nesciunt accusantium voluptate! Velit, ipsam?",
-    status: "PENDING" as const,
-    clientId: "FQwDGQBsyHzroNKjjF8siNmRiEw50MuI",
-    createdAt: "2025-09-19T11:51:22.563Z",
-    updatedAt: "2025-09-19T11:51:22.563Z",
-    client: {
-      id: "FQwDGQBsyHzroNKjjF8siNmRiEw50MuI",
-      name: "Justin Ariem2",
-      firstName: null,
-      lastName: null,
-      middleName: null,
-      gender: null,
-      birthday: null,
-      phone: null,
-      email: "justinariem1@gmail.com",
-      emailVerified: false,
-      role: "CLIENT" as const,
-      image: null,
-      createdAt: new Date("2025-09-14T06:24:05.308Z"),
-      updatedAt: new Date("2025-09-14T06:24:05.308Z"),
-    },
-  };
-
-  const { client, ...rest } = caseData;
-  const caseOnly = {
-    ...rest,
-    createdAt: new Date(rest.createdAt),
-    updatedAt: new Date(rest.updatedAt),
-  };
-
-  const mockFiles = {
-    documents: [
-      {
-        id: 1,
-        name: "Contract_Agreement.pdf",
-        size: "2.4 MB",
-        uploadedAt: "2025-09-18",
-        type: "pdf",
-      },
-      {
-        id: 2,
-        name: "Legal_Brief.docx",
-        size: "1.8 MB",
-        uploadedAt: "2025-09-17",
-        type: "docx",
-      },
-      {
-        id: 3,
-        name: "Evidence_Report.pdf",
-        size: "3.2 MB",
-        uploadedAt: "2025-09-16",
-        type: "pdf",
-      },
-    ],
-    images: [
-      {
-        id: 4,
-        name: "Evidence_Photo_1.jpg",
-        size: "4.1 MB",
-        uploadedAt: "2025-09-18",
-        type: "jpg",
-      },
-      {
-        id: 5,
-        name: "Property_Image.png",
-        size: "2.7 MB",
-        uploadedAt: "2025-09-17",
-        type: "png",
-      },
-    ],
-  };
+  if (!data.data) notFound();
 
   return (
     <div>
-      <main className="container mx-auto px-6 py-8">
+      <pre className="w-full">{JSON.stringify(data, null, 2)}</pre>
+      <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Case Overview */}
-            <CaseOverviewCard caseData={caseOnly} />
+            <CaseOverviewCard caseData={data.data as Case} />
             {/* File Management */}
             <CaseFilesCard
-              documents={mockFiles.documents}
-              images={mockFiles.images}
+              caseId={data.data.id}
+              documents={data.data?.documents ?? []}
             />
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Client Information */}
-            <CaseClientCard client={caseData.client} />
+            <CaseClientCard client={data.data?.client} />
 
             {/* Quick Actions */}
             {/* <Card>
@@ -167,7 +96,7 @@ async function Case({ params }: CasePageProps) {
             </Card> */}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
