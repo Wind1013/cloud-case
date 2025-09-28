@@ -1,8 +1,26 @@
 "use client";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Eye, Download, FileText, ImageIcon, File } from "lucide-react";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  Eye,
+  Download,
+  FileText,
+  ImageIcon,
+  File,
+  Trash2,
+  EllipsisVertical,
+} from "lucide-react";
 import { Document } from "@/generated/prisma";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { IconDotsVertical } from "@tabler/icons-react";
+import { deleteDocument } from "@/actions/document";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
@@ -45,6 +63,8 @@ export default function CaseFilesList({
 }: {
   documents?: Document[] & { signedUrl?: string };
 }) {
+  const router = useRouter();
+
   const handleView = (document: Document & { signedUrl?: string }) => {
     // Use signedUrl if available, fallback to url
     const urlToOpen = document.signedUrl || document.url;
@@ -58,6 +78,26 @@ export default function CaseFilesList({
     link.href = urlToDownload;
     link.download = document.name;
     link.click();
+  };
+
+  const handleDelete = async (document: Document & { signedUrl?: string }) => {
+    if (!confirm(`Are you sure you want to delete "${document.name}"?`)) {
+      return;
+    }
+
+    try {
+      const result = await deleteDocument(document.id);
+
+      if (result.success) {
+        toast.success("Document deleted successfully");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to delete document");
+      }
+    } catch (error) {
+      toast.error("Failed to delete document");
+    } finally {
+    }
   };
 
   return (
@@ -101,7 +141,7 @@ export default function CaseFilesList({
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2 ml-4">
+                <div className="flex items-center space-x-1 ml-4">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -116,8 +156,23 @@ export default function CaseFilesList({
                     onClick={() => handleDownload(document)}
                     className="h-8 w-8 p-0"
                   >
-                    <Download className="h-4 w-4" />
+                    <Download className="h-4 w-4 p-0" />
                   </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      className={buttonVariants({
+                        variant: "ghost",
+                        size: "icon",
+                      })}
+                    >
+                      <EllipsisVertical className="size-4" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={() => handleDelete(document)}>
+                        <Trash2 /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))

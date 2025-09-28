@@ -1,33 +1,9 @@
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { getCaseById } from "@/data/cases";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  CalendarDays,
-  Clock,
-  Download,
-  Eye,
-  FileText,
-  ImageIcon,
-  Mail,
-  Phone,
-  Upload,
-  User,
-} from "lucide-react";
-import React from "react";
-import CaseClientCard from "../components/CaseClientCard";
-import CaseOverviewCard from "../components/CaseOverviewCard";
-import CaseFilesCard from "../components/CaseFilesCard";
 import type { Case } from "@/generated/prisma";
 import { notFound } from "next/navigation";
+import CaseClientCard from "../components/CaseClientCard";
+import CaseFilesCard from "../components/CaseFilesCard";
+import CaseOverviewCard from "../components/CaseOverviewCard";
 
 type CasePageProps = {
   params: Promise<{ id: string }>;
@@ -42,7 +18,6 @@ async function Case({ params }: CasePageProps) {
 
   return (
     <div>
-      <pre className="w-full">{JSON.stringify(data, null, 2)}</pre>
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
