@@ -1,10 +1,8 @@
 import { CaseDataTable } from "@/components/case-data-table";
 import React from "react";
-import { generateMockCaseData } from "./mock-data";
 import { getCases } from "@/data/cases";
 
 async function Cases() {
-  const caseData = generateMockCaseData();
   const { data } = await getCases();
 
   if (!data) {
@@ -28,7 +26,7 @@ async function Cases() {
   return (
     <div className="py-4 md:gap-6 md:py-6">
       <div className="px-4 lg:px-6">
-        <CaseDataTable data={[...caseData, ...mappedData]} />
+        <CaseDataTable data={mappedData} />
       </div>
     </div>
   );
