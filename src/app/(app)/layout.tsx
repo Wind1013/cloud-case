@@ -2,7 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getServerSession } from "@/lib/get-session";
-import { unauthorized } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default async function AppLayout({
   children,
@@ -12,7 +12,9 @@ export default async function AppLayout({
 
   console.log("USER", user);
 
-  if (!session) unauthorized();
+  if (!session) {
+    redirect("/sign-in");
+  }
 
   return (
     <SidebarProvider

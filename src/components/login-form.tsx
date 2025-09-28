@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Loader } from "lucide-react";
 
 export function LoginForm({
   className,
@@ -15,10 +16,12 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
 
@@ -32,6 +35,8 @@ export function LoginForm({
     } else {
       router.push("/dashboard");
     }
+
+    setIsLoading(false);
   }
 
   return (
@@ -73,7 +78,7 @@ export function LoginForm({
                   />
                 </div>
                 <Button type="submit" className="w-full">
-                  Sign in
+                  {isLoading ? <Loader className="animate-spin" /> : "Sign in"}
                 </Button>
               </div>
               <div className="text-center text-sm">

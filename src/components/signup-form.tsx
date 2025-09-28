@@ -17,6 +17,7 @@ import {
 import { signUp } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Loader } from "lucide-react";
 
 export function SignUpForm({
   className,
@@ -165,7 +166,11 @@ export function SignUpForm({
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating account..." : "Create account"}
+                  {isLoading ? (
+                    <Loader className="animate-spin" />
+                  ) : (
+                    "Create account"
+                  )}
                 </Button>
               </div>
 
