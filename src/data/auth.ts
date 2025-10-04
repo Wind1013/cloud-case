@@ -9,7 +9,7 @@ export const getAuthSession = async () => {
   });
 
   if (!session) {
-    throw Error("Unauthenticated");
+    redirect("/sign-in");
   }
 
   return session;
