@@ -29,7 +29,6 @@ import { useScheduler } from "@/providers/schedular-provider";
 import { createAppointment, updateAppointment } from "@/actions/appointment";
 import { toast } from "sonner";
 import { AppointmentVariant, User } from "@/generated/prisma";
-import { FormControl } from "@/components/ui/form";
 
 export default function AddEventModal({
   CustomAddEventModal,
@@ -45,7 +44,7 @@ export default function AddEventModal({
     getEventColor(data?.variant || "primary")
   );
 
-  const typedData = data as { default: Event };
+  const typedData = data as Event;
 
   const { handlers } = useScheduler();
 
@@ -135,11 +134,11 @@ export default function AddEventModal({
     };
 
     try {
-      if (!typedData?.default?.id) {
+      if (!typedData?.id) {
         await createAppointment(appointmentData);
         toast.success("Appointment created successfully");
       } else {
-        await updateAppointment(typedData.default.id, appointmentData);
+        await updateAppointment(typedData.id, appointmentData);
         toast.success("Appointment updated successfully");
       }
       setClose(); // Close the modal after submission
@@ -157,6 +156,7 @@ export default function AddEventModal({
       ) : (
         <>
           <div className="grid gap-2">
+            <pre>{JSON.stringify(data, null, 2)}</pre>
             <Label htmlFor="title">Event Name</Label>
             <Input
               id="title"

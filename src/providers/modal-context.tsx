@@ -41,26 +41,27 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   ) => {
     if (fetchdata) {
       const fetchedData = await fetchdata();
-      setData((prev) => ({ ...prev, [modalId]: fetchedData || null }));
+      console.log("FETCHED", fetchedData);
+      setData(prev => ({ ...prev, [modalId]: fetchedData || null }));
     }
-    setIsOpen((prev) => ({ ...prev, [modalId]: true }));
-    setModals((prev) => ({ ...prev, [modalId]: modal }));
+    setIsOpen(prev => ({ ...prev, [modalId]: true }));
+    setModals(prev => ({ ...prev, [modalId]: modal }));
     // Only update canClose if needed.
-    setCanCloseState((prev) =>
+    setCanCloseState(prev =>
       prev[modalId] === true ? prev : { ...prev, [modalId]: true }
     );
   };
 
   const setClose = (modalId: string = "default") => {
     if (canClose[modalId] !== false) {
-      setIsOpen((prev) => ({ ...prev, [modalId]: false }));
-      setData((prev) => ({ ...prev, [modalId]: null }));
-      setModals((prev) => {
+      setIsOpen(prev => ({ ...prev, [modalId]: false }));
+      setData(prev => ({ ...prev, [modalId]: null }));
+      setModals(prev => {
         const newState = { ...prev };
         delete newState[modalId];
         return newState;
       });
-      setCanCloseState((prev) => {
+      setCanCloseState(prev => {
         const newState = { ...prev };
         delete newState[modalId];
         return newState;
@@ -69,7 +70,7 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   };
 
   const setCanClose = (modalId: string, value: boolean) => {
-    setCanCloseState((prev) => {
+    setCanCloseState(prev => {
       // Only update if the value changes
       if (prev[modalId] === value) return prev;
       return { ...prev, [modalId]: value };

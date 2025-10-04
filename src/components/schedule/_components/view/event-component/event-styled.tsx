@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { User } from "@/generated/prisma";
+import { toast } from "sonner";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -96,6 +97,7 @@ export default function EventStyled({
   // Handler function
   function handleEditEvent(event: Event) {
     // Open the modal with the content
+    toast.info(<pre>{JSON.stringify(event, null, 2)}</pre>);
     setOpen(
       <CustomModal title="Edit Event">
         <AddEventModal
@@ -106,16 +108,14 @@ export default function EventStyled({
         />
       </CustomModal>,
       async () => {
-        return {
-          default: event,
-        };
+        return event;
       }
     );
   }
 
   // Get background color class based on variant
   const getBackgroundColor = (variant: string | undefined) => {
-    const variantKey = variant as keyof typeof variantColors || "primary";
+    const variantKey = (variant as keyof typeof variantColors) || "primary";
     const colors = variantColors[variantKey] || variantColors.primary;
     return `${colors.bg} ${colors.text} ${colors.border}`;
   };
@@ -136,7 +136,9 @@ export default function EventStyled({
             size="icon"
             className={cn(
               "absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
-              event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+              event?.minmized
+                ? "opacity-0 group-hover:opacity-100"
+                : "opacity-100"
             )}
             onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
@@ -145,7 +147,7 @@ export default function EventStyled({
             <TrashIcon size={14} className="text-destructive-foreground" />
           </Button>
         </AlertDialogTrigger>
-        <AlertDialogContent onClick={(e) => e.stopPropagation()} >
+        <AlertDialogContent onClick={e => e.stopPropagation()}>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -179,6 +181,7 @@ export default function EventStyled({
               endDate: event?.endDate,
               description: event?.description,
               variant: event?.variant,
+              clientId: event.clientId,
             });
           }}
         >
@@ -195,6 +198,7 @@ export default function EventStyled({
               endDate: event?.endDate,
               description: event?.description,
               variant: event?.variant,
+              clientId: event?.clientId,
             });
           }}
           className={cn(
@@ -207,18 +211,18 @@ export default function EventStyled({
             <div className="font-semibold text-xs truncate mb-1">
               {event?.title || "Untitled Event"}
             </div>
-            
+
             {/* Show time in minimized mode */}
             {event?.minmized && (
               <div className="text-[10px] opacity-80">
                 {formatTime(event?.startDate)}
               </div>
             )}
-            
+
             {!event?.minmized && event?.description && (
               <div className="my-2 text-sm">{event?.description}</div>
             )}
-            
+
             {!event?.minmized && (
               <div className="text-xs space-y-1 mt-2">
                 <div className="flex items-center">
