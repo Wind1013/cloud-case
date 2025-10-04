@@ -1,3 +1,4 @@
+import { User } from "@/generated/prisma";
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Badge } from "@/components/ui/badge";
@@ -95,12 +96,14 @@ export default function WeeklyView({
   CustomEventComponent,
   CustomEventModal,
   classNames,
+  clients,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<Event>;
   CustomEventModal?: CustomEventModal;
   classNames?: { prev?: string; next?: string; addEvent?: string };
+  clients: User[];
 }) {
   const { getters, handlers } = useScheduler();
   const hoursColumnRef = useRef<HTMLDivElement>(null);
@@ -154,6 +157,7 @@ export default function WeeklyView({
     setOpen(
       <CustomModal title="Add Event">
         <AddEventModal
+          clients={clients}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -479,6 +483,7 @@ export default function WeeklyView({
                                                 }}
                                               >
                                                 <EventStyled
+                                                  clients={clients}
                                                   event={{
                                                     ...event,
                                                     CustomEventComponent,
@@ -503,6 +508,7 @@ export default function WeeklyView({
                                             className={`p-4 rounded-lg shadow-sm border-l-4 border-${event.variant} hover:shadow-md transition-shadow`}
                                           >
                                             <EventStyled
+                                              clients={clients}
                                               event={{
                                                 ...event,
                                                 CustomEventComponent,

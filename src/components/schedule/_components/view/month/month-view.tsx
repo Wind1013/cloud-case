@@ -1,5 +1,6 @@
 "use client";
 
+import { User } from "@/generated/prisma";
 import React, { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -39,12 +40,14 @@ export default function MonthView({
   CustomEventComponent,
   CustomEventModal,
   classNames,
+  clients,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
   CustomEventComponent?: React.FC<Event>;
   CustomEventModal?: CustomEventModal;
   classNames?: { prev?: string; next?: string; addEvent?: string };
+  clients: User[];
 }) {
   const { getters, weekStartsOn } = useScheduler();
   const { setOpen } = useModal();
@@ -101,6 +104,7 @@ export default function MonthView({
     setOpen(
       <CustomModal title="Add Event">
         <AddEventModal
+          clients={clients}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -292,6 +296,7 @@ export default function MonthView({
                           transition={{ duration: 0.3 }}
                         >
                           <EventStyled
+                            clients={clients}
                             event={{
                               ...dayEvents[0],
                               CustomEventComponent,

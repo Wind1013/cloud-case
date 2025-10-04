@@ -11,6 +11,19 @@ import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
+import { User } from "@/generated/prisma";
 
 // Function to format date
 const formatDate = (date: Date) => {
@@ -66,10 +79,12 @@ export default function EventStyled({
   event,
   onDelete,
   CustomEventModal,
+  clients,
 }: {
   event: EventStyledProps;
   CustomEventModal?: CustomEventModal;
   onDelete?: (id: string) => void;
+  clients: User[];
 }) {
   const { setOpen } = useModal();
   const { handlers } = useScheduler();
@@ -84,6 +99,7 @@ export default function EventStyled({
     setOpen(
       <CustomModal title="Edit Event">
         <AddEventModal
+          clients={clients}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -91,7 +107,7 @@ export default function EventStyled({
       </CustomModal>,
       async () => {
         return {
-          ...event,
+          default: event,
         };
       }
     );
@@ -112,22 +128,45 @@ export default function EventStyled({
         event?.minmized ? "border-transparent" : "border-default-400/60"
       )}
     >
-      {/* Delete button - shown by default for non-minimized, or on hover for minimized */}
-      <Button
-        onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-          e.stopPropagation();
-          handlers.handleDeleteEvent(event?.id);
-          onDelete?.(event?.id);
-        }}
-        variant="destructive"
-        size="icon"
-        className={cn(
-          "absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
-          event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100"
-        )}
-      >
-        <TrashIcon size={14} className="text-destructive-foreground" />
-      </Button>
+      {/* Delete button with confirmation */}
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button
+            variant="destructive"
+            size="icon"
+            className={cn(
+              "absolute z-[100] right-1 top-[-8px] h-6 w-6 p-0 shadow-md hover:bg-destructive/90 transition-all duration-200",
+              event?.minmized ? "opacity-0 group-hover:opacity-100" : "opacity-100"
+            )}
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+              e.stopPropagation();
+            }}
+          >
+            <TrashIcon size={14} className="text-destructive-foreground" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent onClick={(e) => e.stopPropagation()} >
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              event.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation();
+                handlers.handleDeleteEvent(event?.id);
+                onDelete?.(event?.id);
+              }}
+            >
+              Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {event.CustomEventComponent ? (
         <div

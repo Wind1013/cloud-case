@@ -154,6 +154,7 @@ export default function DailyView({
   CustomEventModal,
   stopDayEventSummary,
   classNames,
+  clients,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
@@ -161,6 +162,7 @@ export default function DailyView({
   CustomEventModal?: CustomEventModal;
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
+  clients: User[];
 }) {
   const hoursColumnRef = useRef<HTMLDivElement>(null);
   const [detailedHour, setDetailedHour] = useState<string | null>(null);
@@ -217,6 +219,7 @@ export default function DailyView({
     setOpen(
       <CustomModal title="Add Event">
         <AddEventModal
+          clients={clients}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -353,6 +356,7 @@ export default function DailyView({
                           className="mb-2"
                         >
                           <EventStyled
+                            clients={clients}
                             event={{
                               ...event,
                               CustomEventComponent,
@@ -452,6 +456,7 @@ export default function DailyView({
                             transition={{ duration: 0.2 }}
                           >
                             <EventStyled
+                              clients={clients}
                               event={{
                                 ...event,
                                 CustomEventComponent,

@@ -1,22 +1,26 @@
-"use client";
+import { getAppointments } from "@/actions/appointment";
+import AppointmentClient from "./client";
+import { Event } from "@/types";
+import { AppointmentVariant, User } from "@/generated/prisma";
+import { getUsers } from "@/data/users";
 
-import SchedulerWrapper from "@/components/schedule/_components/wrapper/schedular-wrapper";
-import { SchedulerProvider } from "@/providers/schedular-provider";
+const AppointmentPage = async () => {
+  const { data: appointments } = await getAppointments();
+  const clients = await getUsers({ role: "CLIENT" });
 
-const Appointment = () => {
-  return (
-    <div className="pt-4 px-8">
-      <SchedulerProvider weekStartsOn="monday">
-        <SchedulerWrapper
-        // stopDayEventSummary={true}
-        // classNames={{
-        //   tabs: {
-        //     panel: "p-0",
-        //   },
-        // }}
-        />
-      </SchedulerProvider>
-    </div>
-  );
+  const mappedAppointments: Event[] = appointments
+    ? appointments.map((appointment) => ({
+        id: appointment.id,
+        title: appointment.title,
+        description: appointment.description || "",
+        startDate: appointment.startDate,
+        endDate: appointment.endDate,
+        variant: appointment.variant.toLowerCase() as Event["variant"],
+        clientId: appointment.clientId || undefined,
+      }))
+    : [];
+
+  return <AppointmentClient appointments={mappedAppointments} clients={clients as User[]} />;
 };
-export default Appointment;
+
+export default AppointmentPage;

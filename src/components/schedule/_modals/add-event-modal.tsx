@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
@@ -19,14 +26,20 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { EventFormData, eventSchema, Variant, Event } from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
-import { v4 as uuidv4 } from "uuid"; // Use UUID to generate event IDs
+import { createAppointment, updateAppointment } from "@/actions/appointment";
+import { toast } from "sonner";
+import { AppointmentVariant, User } from "@/generated/prisma";
+import { FormControl } from "@/components/ui/form";
 
 export default function AddEventModal({
   CustomAddEventModal,
+  clients,
 }: {
   CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
+  clients: User[];
 }) {
   const { setClose, data } = useModal();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [selectedColor, setSelectedColor] = useState<string>(
     getEventColor(data?.variant || "primary")
@@ -42,33 +55,21 @@ export default function AddEventModal({
     reset,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      startDate: new Date(),
-      endDate: new Date(),
-      variant: data?.variant || "primary",
-      color: data?.color || "blue",
+      title: data?.default?.title || "",
+      description: data?.default?.description || "",
+      startDate: data?.default?.startDate || new Date(),
+      endDate: data?.default?.endDate || new Date(),
+      variant: (data?.default?.variant?.toLowerCase() as Variant) || "primary",
+      color: data?.default?.color || "blue",
+      clientId: data?.default?.clientId || "",
     },
   });
 
-  // Reset the form on initialization
-  useEffect(() => {
-    if (data?.default) {
-      const eventData = data?.default;
-      console.log("eventData", eventData);
-      reset({
-        title: eventData.title,
-        description: eventData.description || "",
-        startDate: eventData.startDate,
-        endDate: eventData.endDate,
-        variant: eventData.variant || "primary",
-        color: eventData.color || "blue",
-      });
-    }
-  }, [data, reset]);
+  const selectedClientId = watch("clientId");
 
   const colorOptions = [
     { key: "blue", name: "Blue" },
@@ -110,31 +111,43 @@ export default function AddEventModal({
   const getButtonVariant = (color: string) => {
     switch (color) {
       case "blue":
-        return "default";
+        return "bg-blue-500 hover:bg-blue-600";
       case "red":
-        return "destructive";
+        return "bg-red-500 hover:bg-red-600";
       case "green":
-        return "success";
+        return "bg-green-500 hover:bg-green-600";
       case "yellow":
-        return "warning";
+        return "bg-yellow-500 hover:bg-yellow-600";
       default:
-        return "default";
+        return "bg-blue-500 hover:bg-blue-600";
     }
   };
 
-  const onSubmit: SubmitHandler<EventFormData> = (formData) => {
-    const newEvent: Event = {
-      id: uuidv4(), // Generate a unique ID
+  const onSubmit: SubmitHandler<EventFormData> = async formData => {
+    setIsLoading(true);
+    const appointmentData = {
       title: formData.title,
+      description: formData.description ?? null,
       startDate: formData.startDate,
       endDate: formData.endDate,
-      variant: formData.variant,
-      description: formData.description,
+      variant: formData.variant.toUpperCase() as AppointmentVariant,
+      clientId: formData.clientId,
     };
 
-    if (!typedData?.default?.id) handlers.handleAddEvent(newEvent);
-    else handlers.handleUpdateEvent(newEvent, typedData.default.id);
-    setClose(); // Close the modal after submission
+    try {
+      if (!typedData?.default?.id) {
+        await createAppointment(appointmentData);
+        toast.success("Appointment created successfully");
+      } else {
+        await updateAppointment(typedData.default.id, appointmentData);
+        toast.success("Appointment updated successfully");
+      }
+      setClose(); // Close the modal after submission
+    } catch (error) {
+      toast.error("Failed to save appointment");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -167,6 +180,30 @@ export default function AddEventModal({
             />
           </div>
 
+          <div className="grid gap-2">
+            <Label htmlFor="clientId">Client</Label>
+            <Select
+              onValueChange={value => setValue("clientId", value)}
+              value={selectedClientId}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a client" />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map(client => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.clientId && (
+              <p className="text-sm text-red-500">
+                {errors.clientId.message as string}
+              </p>
+            )}
+          </div>
+
           <SelectDate
             data={{
               startDate: data?.default?.startDate || new Date(),
@@ -180,17 +217,16 @@ export default function AddEventModal({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant={getButtonVariant(selectedColor)}
-                  className="w-fit my-2"
+                  className={cn(`w-fit my-2`, getButtonVariant(selectedColor))}
                 >
                   {
-                    colorOptions.find((color) => color.key === selectedColor)
+                    colorOptions.find(color => color.key === selectedColor)
                       ?.name
                   }
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {colorOptions.map((color) => (
+                {colorOptions.map(color => (
                   <DropdownMenuItem
                     key={color.key}
                     onClick={() => {
@@ -217,7 +253,9 @@ export default function AddEventModal({
             <Button variant="outline" type="button" onClick={() => setClose()}>
               Cancel
             </Button>
-            <Button type="submit">Save Event</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Event"}
+            </Button>
           </div>
         </>
       )}

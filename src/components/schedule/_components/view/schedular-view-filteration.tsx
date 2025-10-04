@@ -16,6 +16,7 @@ import { ClassNames, CustomComponents, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
 import { IconCalendarMonth, IconCalendarWeek } from "@tabler/icons-react";
+import { User } from "@/generated/prisma";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -33,11 +34,13 @@ export default function SchedulerViewFilteration({
   stopDayEventSummary = false,
   CustomComponents,
   classNames,
+  clients,
 }: {
   views?: Views;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
+  clients: User[];
 }) {
   const { setOpen } = useModal();
   const [activeView, setActiveView] = useState<string>("day");
@@ -64,7 +67,9 @@ export default function SchedulerViewFilteration({
       }
     }
 
-    window && window.addEventListener("resize", handleResize);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+    }
 
     return () => window && window.removeEventListener("resize", handleResize);
   }, [clientSide]);
@@ -108,6 +113,7 @@ export default function SchedulerViewFilteration({
     setOpen(
       <CustomModal title="Add Event">
         <AddEventModal
+          clients={clients}
           CustomAddEventModal={
             CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -123,6 +129,7 @@ export default function SchedulerViewFilteration({
     if (viewsSelector?.length) {
       setActiveView(viewsSelector[0]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -198,6 +205,7 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...animationConfig}>
                     <DailyView
+                      clients={clients}
                       stopDayEventSummary={stopDayEventSummary}
                       classNames={classNames?.buttons}
                       prevButton={
@@ -221,6 +229,7 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...animationConfig}>
                     <WeeklyView
+                      clients={clients}
                       classNames={classNames?.buttons}
                       prevButton={
                         CustomComponents?.customButtons?.CustomPrevButton
@@ -243,6 +252,7 @@ export default function SchedulerViewFilteration({
                 <AnimatePresence mode="wait">
                   <motion.div {...animationConfig}>
                     <MonthView
+                      clients={clients}
                       classNames={classNames?.buttons}
                       prevButton={
                         CustomComponents?.customButtons?.CustomPrevButton

@@ -15,6 +15,7 @@ export interface Event {
   startDate: Date;
   endDate: Date;
   variant?: Variant;
+  clientId?: string;
 }
 
 // Define the state interface for the scheduler
@@ -92,6 +93,7 @@ export const eventSchema = z.object({
   endDate: z.date(),
   variant: z.enum(["primary", "danger", "success", "warning", "default"]),
   color: z.string().nonempty("Color selection is required"),
+  clientId: z.string().nonempty("Client is required"),
 });
 
 export type EventFormData = z.infer<typeof eventSchema>;

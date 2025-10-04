@@ -1,10 +1,11 @@
 import React from "react";
 import SchedulerView from "../view/schedular-view";
+import { User } from "@/generated/prisma";
 
-export default function SchedulerWrapper() {
+export default function SchedulerWrapper({ clients }: { clients: User[] }) {
   return (
     <div className="w-full">
-      <SchedulerView />
+      <SchedulerView clients={clients} />
     </div>
   );
 }
