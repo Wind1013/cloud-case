@@ -9,6 +9,7 @@ import {
   IconDatabase,
   IconFileAi,
   IconFileDescription,
+  IconFiles,
   IconFileWord,
   IconHelp,
   IconInnerShadowTop,
@@ -44,6 +45,11 @@ const data = {
       title: "Cases",
       url: "/cases",
       icon: IconBriefcase,
+    },
+    {
+      title: "Documents",
+      url: "/documents",
+      icon: IconFiles,
     },
     {
       title: "Appointments",

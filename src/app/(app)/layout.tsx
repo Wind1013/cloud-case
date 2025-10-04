@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { getAuthSession } from "@/data/auth";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 export default async function AppLayout({
   children,
@@ -17,11 +18,13 @@ export default async function AppLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex-1 overflow-auto">{children}</div>
-      </SidebarInset>
+      <NuqsAdapter>
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader />
+          <div className="flex-1 overflow-auto">{children}</div>
+        </SidebarInset>
+      </NuqsAdapter>
     </SidebarProvider>
   );
 }
