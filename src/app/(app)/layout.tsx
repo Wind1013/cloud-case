@@ -7,15 +7,6 @@ import { redirect } from "next/navigation";
 export default async function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const session = await getServerSession();
-  const user = session?.user;
-
-  console.log("USER", user);
-
-  if (!session) {
-    redirect("/sign-in");
-  }
-
   return (
     <SidebarProvider
       style={
