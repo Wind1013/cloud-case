@@ -34,6 +34,7 @@ export default function AddEventModal({
   CustomAddEventModal,
   clients,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   CustomAddEventModal?: React.FC<{ register: any; errors: any }>;
   clients: User[];
 }) {
@@ -156,7 +157,6 @@ export default function AddEventModal({
       ) : (
         <>
           <div className="grid gap-2">
-            <pre>{JSON.stringify(data, null, 2)}</pre>
             <Label htmlFor="title">Event Name</Label>
             <Input
               id="title"

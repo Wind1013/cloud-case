@@ -130,6 +130,7 @@ export default function MonthView({
       async () => {
         return {
           dayEvents,
+          clients,
         };
       }
     );

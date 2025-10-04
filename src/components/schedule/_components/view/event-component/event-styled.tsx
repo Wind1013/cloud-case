@@ -97,7 +97,6 @@ export default function EventStyled({
   // Handler function
   function handleEditEvent(event: Event) {
     // Open the modal with the content
-    toast.info(<pre>{JSON.stringify(event, null, 2)}</pre>);
     setOpen(
       <CustomModal title="Edit Event">
         <AddEventModal
