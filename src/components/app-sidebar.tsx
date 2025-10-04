@@ -46,14 +46,14 @@ const data = {
       icon: IconBriefcase,
     },
     {
+      title: "Appointments",
+      url: "/appointments",
+      icon: IconChartBar,
+    },
+    {
       title: "Legal Forms",
       url: "/legal-forms",
       icon: IconListDetails,
-    },
-    {
-      title: "Counseling",
-      url: "/counseling",
-      icon: IconChartBar,
     },
     {
       title: "Clients",
