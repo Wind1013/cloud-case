@@ -14,7 +14,6 @@ export default async function DocumentsPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  console.log("PAGE ERENDER");
   const { query, page, limit } = await searchParamsCache.parse(searchParams);
 
   const { data: documents, total } = await getDocuments({ page, limit, query });
