@@ -29,17 +29,14 @@ export type Action =
   | { type: "UPDATE_EVENT"; payload: Event }
   | { type: "SET_EVENTS"; payload: Event[] };
 
-
-  
-
 // Define handlers interface
 export interface Handlers {
   handleEventStyling: (
     event: Event,
     dayEvents: Event[],
-    periodOptions?: { 
-      eventsInSamePeriod?: number; 
-      periodIndex?: number; 
+    periodOptions?: {
+      eventsInSamePeriod?: number;
+      periodIndex?: number;
       adjustForPeriod?: boolean;
     }
   ) => {
@@ -109,6 +106,7 @@ export type startOfWeek = "sunday" | "monday";
 export interface CustomEventModal {
   CustomAddEventModal?: {
     title?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     CustomForm?: React.FC<{ register: any; errors: any }>;
   };
 }

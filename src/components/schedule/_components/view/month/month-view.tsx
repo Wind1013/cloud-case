@@ -16,6 +16,8 @@ import EventStyled from "../event-component/event-styled";
 import { Event, CustomEventModal } from "@/types";
 import CustomModal from "@/components/ui/custom-modal";
 
+import { easeInOut } from "framer-motion";
+
 const pageTransitionVariants = {
   enter: (direction: number) => ({
     opacity: 0,
@@ -26,7 +28,7 @@ const pageTransitionVariants = {
   exit: (direction: number) => ({
     opacity: 0,
     transition: {
-      opacity: { duration: 0.2, ease: "easeInOut" },
+      opacity: { duration: 0.2, ease: easeInOut },
     },
   }),
 };
@@ -248,7 +250,7 @@ export default function MonthView({
             </div>
           ))}
 
-          {daysInMonth.map((dayObj) => {
+          {daysInMonth.map(dayObj => {
             const dayEvents = getters.getEventsForDay(dayObj.day, currentDate);
 
             return (
@@ -302,7 +304,7 @@ export default function MonthView({
                     </AnimatePresence>
                     {dayEvents.length > 1 && (
                       <Badge
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleShowMoreEvents(dayEvents);
                         }}
