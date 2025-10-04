@@ -13,6 +13,7 @@ import { CustomEventModal, Event } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
+import { User } from "@/generated/prisma";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: 24 }, (_, i) => {
