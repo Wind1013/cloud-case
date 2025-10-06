@@ -1,37 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Cloud Case Next
 
-## Getting Started
+This is a Next.js application for managing legal cases.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*   **Framework:** [Next.js](https://nextjs.org/)
+*   **Language:** [TypeScript](https://www.typescriptlang.org/)
+*   **Database:** [Prisma](https://www.prisma.io/) ORM (likely with PostgreSQL or MySQL)
+*   **Authentication:** [better-auth](https://www.npmjs.com/package/better-auth)
+*   **File Uploads:** [better-upload](https://www.npmjs.com/package/better-upload), [@aws-sdk/client-s3](https://www.npmjs.com/package/@aws-sdk/client-s3), [react-dropzone](https://react-dropzone.js.org/)
+*   **UI:**
+    *   [React](https://reactjs.org/)
+    *   [Tailwind CSS](https://tailwindcss.com/)
+    *   [Shadcn UI](https://ui.shadcn.com/)
+    *   [lucide-react](https.lucide.dev/guide/packages/lucide-react) for icons
+    *   [Recharts](https://recharts.org/) for charts
+    *   [TanStack Table](https://tanstack.com/table/v8) for tables
+*   **Form Handling:** [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/) for validation
+*   **Styling:** [tailwindcss](https://tailwindcss.com/), [clsx](https://www.npmjs.com/package/clsx), [tailwind-merge](https://www.npmjs.com/package/tailwind-merge)
+*   **Drag and Drop:** [dnd-kit](https://dndkit.com/)
+*   **Linting:** [ESLint](https://eslint.org/)
+*   **Package Manager:** [npm](https://www.npmjs.com/)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Backend Functions
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+These functions are located in the `src/actions` and `src/data` directories.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Authentication
 
-## Learn More
+*Found in: `src/data/auth.ts`*
 
-To learn more about Next.js, take a look at the following resources:
+*   `getAuthSession()`: Retrieves the authentication session for the current user. Redirects to the sign-in page if the user is not authenticated.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Appointments
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+*Found in: `src/actions/appointment.ts`*
 
-## Deploy on Vercel
+*   `getAppointments()`: Retrieves all appointments.
+*   `createAppointment(formData)`: Creates a new appointment.
+*   `updateAppointment(id, formData)`: Updates an existing appointment.
+*   `deleteAppointment(id)`: Deletes an appointment.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Cases
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# cloud-case
+*Found in: `src/actions/cases.ts` and `src/data/cases.ts`*
+
+*   `getCases()`: Retrieves all cases.
+*   `getCaseById(id)`: Retrieves a single case by its ID, including associated client and document information.
+*   `createCase(formData)`: Creates a new case.
+*   `updateCase(id, formData)`: Updates an existing case.
+
+### Documents
+
+*Found in: `src/actions/document.ts` and `src/data/documents.ts`*
+
+*   `getDocuments({ page, limit, query })`: Retrieves a paginated list of documents, with optional search query.
+*   `createDocument(docData)`: Creates a new document.
+*   `deleteDocument(documentId)`: Deletes a document from the database and from the S3 bucket.
+
+### Users
+
+*Found in: `src/actions/users.ts` and `src/data/users.ts`*
+
+*   `getUsers({ role })`: Retrieves a list of users, with an optional filter by user role.
