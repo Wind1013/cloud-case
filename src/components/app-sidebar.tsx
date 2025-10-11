@@ -57,8 +57,8 @@ const data = {
       icon: IconChartBar,
     },
     {
-      title: "Legal Forms",
-      url: "/legal-forms",
+      title: "Templates",
+      url: "/templates",
       icon: IconListDetails,
     },
     {

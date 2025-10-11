@@ -15,7 +15,7 @@ export function Search() {
   return (
     <Input
       defaultValue={query}
-      placeholder="Search documents..."
+      placeholder="Search..."
       onChange={e => handleSearch(e.target.value)}
       onKeyDown={e => {
         if (e.key === "Enter") {

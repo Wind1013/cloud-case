@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     authInterrupts: true,
   },
   output: "standalone",
+  serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
 };
 
 export default nextConfig;
