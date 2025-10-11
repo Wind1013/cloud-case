@@ -155,39 +155,30 @@ export async function generatePDF(
     html = html.replace(regex, data[key] || "");
   });
 
-  const isProduction = process.env.VERCEL === "1";
+  const isProduction = !!process.env.VERCEL;
 
-  const browser = await puppeteer.launch({
-    args: isProduction
-      ? [
-          ...chromium.args,
-          "--disable-gpu",
-          "--disable-dev-shm-usage",
-          "--disable-setuid-sandbox",
-          "--no-first-run",
-          "--no-sandbox",
-          "--no-zygote",
-          "--single-process",
-        ]
-      : ["--no-sandbox", "--disable-setuid-sandbox"],
-    defaultViewport: {
-      width: 1920,
-      height: 1080,
-    },
-    executablePath: isProduction
-      ? await chromium.executablePath()
-      : process.platform === "win32"
-      ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
-      : process.platform === "darwin"
-      ? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-      : "/usr/bin/google-chrome",
-    headless: true,
-  });
+  let browser;
 
   try {
-    const page = await browser.newPage();
+    if (isProduction) {
+      const chromium = (await import("@sparticuz/chromium")).default;
+      const puppeteerCore = await import("puppeteer-core");
 
-    // Set a timeout to prevent hanging
+      browser = await puppeteerCore.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: true,
+      });
+    } else {
+      const puppeteer = await import("puppeteer");
+      browser = await puppeteer.launch({
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true,
+      });
+    }
+
+    const page = await browser.newPage();
     await page.setContent(html, {
       waitUntil: "networkidle0",
       timeout: 30000,
@@ -209,6 +200,8 @@ export async function generatePDF(
       filename: `${template.name.replace(/[^a-z0-9]/gi, "_")}.pdf`,
     };
   } finally {
-    await browser.close();
+    if (browser) {
+      await browser.close();
+    }
   }
 }
