@@ -175,7 +175,7 @@ export async function generatePDF(
       height: 1080,
     },
     executablePath: isProduction
-      ? await chromium.executablePath("/tmp")
+      ? await chromium.executablePath()
       : process.platform === "win32"
       ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
       : process.platform === "darwin"
