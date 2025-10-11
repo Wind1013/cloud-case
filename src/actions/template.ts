@@ -4,9 +4,7 @@ import { Prisma } from "@/generated/prisma";
 import { getServerSession } from "@/lib/get-session";
 import { lexicalToHtml } from "@/lib/lexical";
 import prisma from "@/lib/prisma";
-import chromium from "@sparticuz/chromium";
 import { revalidatePath } from "next/cache";
-import puppeteer from "puppeteer-core";
 
 function extractVariables(content: string): string[] {
   const matches = content.match(/\{\{([^}]+)\}\}/g);
@@ -132,76 +130,4 @@ export async function deleteTemplate(id: string) {
 
   revalidatePath("/templates");
   return { success: true };
-}
-
-export async function generatePDF(
-  templateId: string,
-  data: Record<string, string>
-) {
-  await getServerSession();
-  const template = await prisma.template.findUnique({
-    where: { id: templateId },
-  });
-
-  if (!template) {
-    throw new Error("Template not found");
-  }
-
-  let html = lexicalToHtml(template.content);
-
-  // Replace variables
-  Object.keys(data).forEach(key => {
-    const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
-    html = html.replace(regex, data[key] || "");
-  });
-
-  const isProduction = !!process.env.VERCEL;
-
-  let browser;
-
-  try {
-    if (isProduction) {
-      const chromium = (await import("@sparticuz/chromium")).default;
-      const puppeteerCore = await import("puppeteer-core");
-
-      browser = await puppeteerCore.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: true,
-      });
-    } else {
-      const puppeteer = await import("puppeteer");
-      browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
-        headless: true,
-      });
-    }
-
-    const page = await browser.newPage();
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      timeout: 30000,
-    });
-
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "20mm",
-        right: "20mm",
-        bottom: "20mm",
-        left: "20mm",
-      },
-    });
-
-    return {
-      pdf: Buffer.from(pdf).toString("base64"),
-      filename: `${template.name.replace(/[^a-z0-9]/gi, "_")}.pdf`,
-    };
-  } finally {
-    if (browser) {
-      await browser.close();
-    }
-  }
 }

@@ -1,16 +1,23 @@
 "use client";
 
-import { generatePDF } from "@/actions/template";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export default function PreviewButton({ templateId }: { templateId: string }) {
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handlePreview = async () => {
-    setIsGenerating(true);
+    setIsLoading(true);
     try {
-      const { pdf } = await generatePDF(templateId, {});
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ templateId: templateId, data: {} }),
+      });
+      const { pdf, filename } = await response.json();
+
       const byteCharacters = atob(pdf);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -21,19 +28,15 @@ export default function PreviewButton({ templateId }: { templateId: string }) {
       const fileURL = URL.createObjectURL(file);
       window.open(fileURL);
     } catch (error) {
-      alert("Failed to generate PDF preview");
+      alert("Failed to generate preview");
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <Button
-      onClick={handlePreview}
-      disabled={isGenerating}
-      className="btn btn-secondary"
-    >
-      {isGenerating ? "Generating..." : "Preview"}
+    <Button onClick={handlePreview} disabled={isLoading}>
+      {isLoading ? "Loading..." : "Preview"}
     </Button>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { generatePDF } from "@/actions/template";
 import { Template } from "@/generated/prisma";
 import { useState } from "react";
 
@@ -21,7 +20,14 @@ export default function UseTemplatePage({ template }: { template: Template }) {
 
     setIsGenerating(true);
     try {
-      const { pdf } = await generatePDF(template.id, formData);
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ templateId: template.id, data: formData }),
+      });
+      const { pdf, filename } = await response.json();
       const byteCharacters = atob(pdf);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {

@@ -1,6 +1,5 @@
 "use client";
 
-import { generatePDF } from "@/actions/template";
 import { Template } from "@/generated/prisma";
 import { useState, useTransition } from "react";
 
@@ -17,7 +16,14 @@ export default function DocumentForm({ template }: { template: Template }) {
 
     startTransition(async () => {
       try {
-        const result = await generatePDF(template.id, formData);
+        const response = await fetch("/api/generate-pdf", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ templateId: template.id, data: formData }),
+        });
+        const result = await response.json();
 
         // Convert base64 to blob and trigger download
         const byteCharacters = atob(result.pdf);
