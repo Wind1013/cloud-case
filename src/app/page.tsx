@@ -304,7 +304,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 Cloud Case. All rights reserved.</p>
+            <p>&copy; 2024 Cloud Case. All rights reserved</p>
           </div>
         </div>
       </footer>
