@@ -24,14 +24,40 @@ export async function getTemplates({
 }) {
   await getServerSession();
 
-  const where: Prisma.TemplateWhereInput = query
-    ? {
-        name: {
-          contains: query,
-          mode: "insensitive",
-        },
-      }
-    : {};
+  const where: Prisma.TemplateWhereInput = {
+    status: "ACTIVE",
+    ...(query && { name: { contains: query, mode: "insensitive" } }),
+  };
+
+  const [templates, total] = await Promise.all([
+    prisma.template.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.template.count({ where }),
+  ]);
+
+  return { data: templates, total };
+}
+
+// Get all archived templates
+export async function getArchivedTemplates({
+  page = 1,
+  limit = 10,
+  query = "",
+}: {
+  page?: number;
+  limit?: number;
+  query?: string;
+}) {
+  await getServerSession();
+
+  const where: Prisma.TemplateWhereInput = {
+    status: "ARCHIVED",
+    ...(query && { name: { contains: query, mode: "insensitive" } }),
+  };
 
   const [templates, total] = await Promise.all([
     prisma.template.findMany({
@@ -126,6 +152,26 @@ export async function deleteTemplate(id: string) {
 
   await prisma.template.delete({
     where: { id },
+  });
+
+  revalidatePath("/templates");
+  return { success: true };
+}
+
+// Archive template
+export async function archiveTemplate(id: string) {
+  await getServerSession();
+  const existing = await prisma.template.findUnique({
+    where: { id },
+  });
+
+  if (!existing) {
+    throw new Error("Template not found");
+  }
+
+  await prisma.template.update({
+    where: { id },
+    data: { status: "ARCHIVED" },
   });
 
   revalidatePath("/templates");
