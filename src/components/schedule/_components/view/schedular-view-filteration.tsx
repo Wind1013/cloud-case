@@ -142,8 +142,8 @@ export default function SchedulerViewFilteration({
             className={cn("w-full", classNames?.tabs)}
           >
             <div className="flex justify-between items-center mb-4">
-              <TabsList className="grid grid-cols-3">
-                {viewsSelector?.includes("day") && (
+              <TabsList className="grid grid-cols-2">
+                {/* {viewsSelector?.includes("day") && (
                   <TabsTrigger value="day">
                     {CustomComponents?.customTabs?.CustomDayTab ? (
                       CustomComponents.customTabs.CustomDayTab
@@ -154,7 +154,7 @@ export default function SchedulerViewFilteration({
                       </div>
                     )}
                   </TabsTrigger>
-                )}
+                )} */}
 
                 {viewsSelector?.includes("week") && (
                   <TabsTrigger value="week">
@@ -200,7 +200,7 @@ export default function SchedulerViewFilteration({
               )}
             </div>
 
-            {viewsSelector?.includes("day") && (
+            {/* {viewsSelector?.includes("day") && (
               <TabsContent value="day">
                 <AnimatePresence mode="wait">
                   <motion.div {...animationConfig}>
@@ -222,7 +222,7 @@ export default function SchedulerViewFilteration({
                   </motion.div>
                 </AnimatePresence>
               </TabsContent>
-            )}
+            )} */}
 
             {viewsSelector?.includes("week") && (
               <TabsContent value="week">
