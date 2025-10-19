@@ -4,13 +4,38 @@ import prisma from "@/lib/prisma";
 
 export interface GetUsersParams {
   role?: UserRole;
+  query?: string;
 }
 
-export const getUsers = async ({ role }: GetUsersParams = {}) => {
+export const getUsers = async ({ role, query }: GetUsersParams) => {
   try {
     const users = await prisma.user.findMany({
       where: {
         ...(role ? { role: role } : {}),
+        ...(query
+          ? {
+              OR: [
+                {
+                  firstName: {
+                    contains: query,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  lastName: {
+                    contains: query,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  email: {
+                    contains: query,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            }
+          : {}),
       },
       select: {
         id: true,
