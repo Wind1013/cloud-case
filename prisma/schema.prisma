@@ -33,7 +33,7 @@ enum Gender {
 }
 
 model User {
-  id            String    @id
+  id            String    @id @default(cuid())
   name          String
   firstName     String?
   lastName      String?
@@ -56,8 +56,21 @@ model User {
   createdAppointments Appointment[] @relation("CreatedAppointments")
   clientAppointments  Appointment[] @relation("ClientAppointments")
 
+  notes         Note[]
+
   @@unique([email])
   @@map("user")
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
 }
 
 model Session {

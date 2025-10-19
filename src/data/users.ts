@@ -36,3 +36,23 @@ export const getUsers = async ({ role }: GetUsersParams = {}) => {
     throw new Error("Failed to fetch users");
   }
 };
+
+export const getUserById = async (id: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      include: {
+        clientCases: true,
+        notes: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+    return user;
+  } catch (error) {
+    console.error("[GET_USER_BY_ID_ERROR]", error);
+    throw new Error("Failed to fetch user");
+  }
+};
