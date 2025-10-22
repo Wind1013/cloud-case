@@ -16,9 +16,33 @@ import { Document as PrismaDocument, Case } from "@/generated/prisma";
 
 type Document = PrismaDocument & {
   case: Case;
+  signedUrl?: string;
 };
 
 import { Checkbox } from "@/components/ui/checkbox";
+
+function formatDocumentType(mimeType: string): string {
+  switch (mimeType) {
+    case "application/pdf":
+      return "PDF";
+    case "application/msword":
+      return "DOC";
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      return "DOCX";
+    case "application/vnd.ms-excel":
+      return "XLS";
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      return "XLSX";
+    case "text/plain":
+      return "TXT";
+    case "image/jpeg":
+    case "image/png":
+    case "image/gif":
+      return "Image";
+    default:
+      return mimeType.split("/")[1]?.toUpperCase() || mimeType;
+  }
+}
 
 export const columns: ColumnDef<Document>[] = [
   {
@@ -64,18 +88,21 @@ export const columns: ColumnDef<Document>[] = [
   {
     accessorKey: "type",
     header: "Type",
+    cell: ({ row }) => {
+      const type = row.getValue("type") as string;
+      return <div>{formatDocumentType(type)}</div>;
+    },
   },
   {
     accessorKey: "size",
     header: "Size",
     cell: ({ row }) => {
-      const size = parseFloat(row.getValue("size"));
+      const sizeInBytes = parseFloat(row.getValue("size"));
+      const sizeInKB = sizeInBytes / 1024;
       const formatted = new Intl.NumberFormat("en-US", {
-        style: "unit",
-        unit: "byte",
-        unitDisplay: "narrow",
-      }).format(size);
-      return <div>{formatted}</div>;
+        maximumFractionDigits: 2,
+      }).format(sizeInKB);
+      return <div>{formatted} KB</div>;
     },
   },
   {
@@ -103,7 +130,7 @@ export const columns: ColumnDef<Document>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>
-              <Link href={document.url} target="_blank">
+              <Link href={document.signedUrl || document.url} target="_blank">
                 View Document
               </Link>
             </DropdownMenuItem>
