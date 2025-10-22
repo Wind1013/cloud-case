@@ -31,10 +31,6 @@ export const columns: ColumnDef<User>[] = [
     header: "Phone",
   },
   {
-    accessorKey: "role",
-    header: "Role",
-  },
-  {
     accessorKey: "createdAt",
     header: "Created At",
     cell: ({ row }) => {
