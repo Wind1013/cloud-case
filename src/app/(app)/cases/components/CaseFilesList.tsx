@@ -21,6 +21,18 @@ import { IconDotsVertical } from "@tabler/icons-react";
 import { deleteDocument } from "@/actions/document";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
@@ -64,6 +76,8 @@ export default function CaseFilesList({
   documents?: Document[] & { signedUrl?: string };
 }) {
   const router = useRouter();
+  const [openAlertDialog, setOpenAlertDialog] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
 
   const handleView = (document: Document & { signedUrl?: string }) => {
     // Use signedUrl if available, fallback to url
@@ -80,13 +94,16 @@ export default function CaseFilesList({
     link.click();
   };
 
-  const handleDelete = async (document: Document & { signedUrl?: string }) => {
-    if (!confirm(`Are you sure you want to delete "${document.name}"?`)) {
-      return;
-    }
+  const handleDeleteClick = (document: Document) => {
+    setDocumentToDelete(document);
+    setOpenAlertDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!documentToDelete) return;
 
     try {
-      const result = await deleteDocument(document.id);
+      const result = await deleteDocument(documentToDelete.id);
 
       if (result.success) {
         toast.success("Document deleted successfully");
@@ -97,6 +114,8 @@ export default function CaseFilesList({
     } catch (error) {
       toast.error("Failed to delete document");
     } finally {
+      setOpenAlertDialog(false);
+      setDocumentToDelete(null);
     }
   };
 
@@ -168,9 +187,32 @@ export default function CaseFilesList({
                       <EllipsisVertical className="size-4" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => handleDelete(document)}>
-                        <Trash2 /> Delete
-                      </DropdownMenuItem>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <DropdownMenuItem
+                            onSelect={(e) => {
+                              e.preventDefault();
+                              handleDeleteClick(document);
+                            }}
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                          </DropdownMenuItem>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete
+                              <span className="font-bold"> {documentToDelete?.name} </span>
+                              and remove its data from our servers.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={confirmDelete}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
