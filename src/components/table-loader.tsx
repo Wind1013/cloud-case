@@ -8,7 +8,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-export default function DocumentsLoading() {
+export default function TableLoader() {
   return (
     <div className="p-8">
       <div className="rounded-md border">

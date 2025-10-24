@@ -5,7 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { Template } from "@/generated/prisma";
 import Link from "next/link";
 import { Suspense } from "react";
-import DocumentsLoading from "../documents/loader";
+import TableLoader from "../../../components/table-loader";
 import { Search } from "../documents/search";
 import { searchParamsCache } from "../documents/searchParams";
 import { buttonVariants } from "@/components/ui/button";
@@ -20,7 +20,7 @@ async function ActiveTemplates({
   const searchKey = `${query}-${page}-${limit}`;
 
   return (
-    <Suspense key={searchKey} fallback={<DocumentsLoading />}>
+    <Suspense key={searchKey} fallback={<TableLoader />}>
       <TemplateDataTable<Template, unknown>
         columns={columns as ColumnDef<Template, unknown>[]}
         data={templates ?? []}
@@ -47,7 +47,7 @@ async function ArchivedTemplates({
   const searchKey = `${query}-${page}-${limit}`;
 
   return (
-    <Suspense key={searchKey} fallback={<DocumentsLoading />}>
+    <Suspense key={searchKey} fallback={<TableLoader />}>
       <TemplateDataTable<Template, unknown>
         columns={columns as ColumnDef<Template, unknown>[]}
         data={templates ?? []}

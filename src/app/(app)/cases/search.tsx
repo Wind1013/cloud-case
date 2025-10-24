@@ -1,0 +1,27 @@
+// src/app/(app)/cases/search.tsx
+"use client";
+import { Input } from "@/components/ui/input";
+import { useQueryState } from "nuqs";
+import { useDebouncedCallback } from "use-debounce";
+
+export function Search() {
+  const [query, setQuery] = useQueryState("query", { shallow: false });
+
+  const handleSearch = useDebouncedCallback((value: string) => {
+    setQuery(value);
+  }, 500);
+
+  return (
+    <Input
+      defaultValue={query ?? ""}
+      placeholder="Search title, description or client name"
+      onChange={e => handleSearch(e.target.value)}
+      onKeyDown={e => {
+        if (e.key === "Enter") {
+          setQuery(e.currentTarget.value);
+        }
+      }}
+      className="w-full"
+    />
+  );
+}

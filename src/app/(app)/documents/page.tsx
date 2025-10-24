@@ -1,7 +1,7 @@
 // app/documents/page.tsx
 import { getDocuments } from "@/data/documents";
 import { Suspense } from "react";
-import DocumentsLoading from "./loader";
+import TableLoader from "../../../components/table-loader";
 import { Search } from "./search";
 import { DocumentDataTable } from "@/components/document-data-table";
 import { columns } from "./columns";
@@ -29,7 +29,7 @@ export default async function DocumentsPage({
             <Search />
           </div>
         </div>
-        <Suspense key={searchKey} fallback={<DocumentsLoading />}>
+        <Suspense key={searchKey} fallback={<TableLoader />}>
           <DocumentDataTable<Document, unknown>
             columns={columns as ColumnDef<Document, unknown>[]}
             data={documents ?? []}

@@ -6,12 +6,19 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { config } from "@/config";
 import { client } from "@/lib/tigris-client";
 
-export async function getCases() {
+export async function getCases(query?: string) {
   await getAuthSession();
-
   try {
     const cases = await prisma.case.findMany({
-      where: {},
+      where: query
+        ? {
+            OR: [
+              { title: { contains: query, mode: "insensitive" } },
+              { description: { contains: query, mode: "insensitive" } },
+              { client: { name: { contains: query, mode: "insensitive" } } },
+            ],
+          }
+        : {},
       include: {
         client: true,
       },
