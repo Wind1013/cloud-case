@@ -1,28 +1,23 @@
 "use client";
 
-import * as React from "react";
 import {
   IconBriefcase,
+  IconCheck,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
+  IconClock,
   IconDotsVertical,
-  IconFilter,
   IconLayoutColumns,
   IconLoader,
   IconPlus,
   IconScale,
   IconShieldLock,
-  IconClock,
-  IconCheck,
-  IconX,
 } from "@tabler/icons-react";
 import {
-  type Column,
   type ColumnDef,
-  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
   getFacetedRowModel,
@@ -30,27 +25,16 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  type Row,
   type SortingState,
   useReactTable,
   type VisibilityState,
 } from "@tanstack/react-table";
+import * as React from "react";
 import { z } from "zod";
 
-import { useIsMobile } from "@/hooks/use-mobile";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -59,7 +43,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -76,7 +59,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
 
 export const caseSchema = z.object({
@@ -172,9 +154,6 @@ const columns: ColumnDef<CaseData>[] = [
         </Badge>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
   },
   {
     accessorKey: "status",
@@ -231,9 +210,6 @@ const columns: ColumnDef<CaseData>[] = [
         </Badge>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
   },
   {
     accessorKey: "clientId",
@@ -287,110 +263,10 @@ const columns: ColumnDef<CaseData>[] = [
   },
 ];
 
-interface DataTableFilterProps<TData, TValue> {
-  column: Column<TData, TValue> | undefined;
-  title: string;
-  options: {
-    label: string;
-    value: string;
-    icon?: React.ComponentType<{ className?: string }>;
-  }[];
-}
-
-function DataTableFilter<TData, TValue>({
-  column,
-  title,
-  options,
-}: DataTableFilterProps<TData, TValue>) {
-  const filterValues = (column?.getFilterValue() as string[]) || [];
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <IconFilter className="mr-2 size-4" />
-          {title}
-          {filterValues.length > 0 && (
-            <>
-              <DropdownMenuSeparator />
-              <Badge
-                variant="secondary"
-                className="rounded-sm px-1 font-normal lg:hidden"
-              >
-                {filterValues.length}
-              </Badge>
-              <div className="hidden space-x-1 lg:flex">
-                {filterValues.length > 2 ? (
-                  <Badge
-                    variant="secondary"
-                    className="rounded-sm px-1 font-normal"
-                  >
-                    {filterValues.length} selected
-                  </Badge>
-                ) : (
-                  options
-                    .filter(option => filterValues.includes(option.value))
-                    .map(option => (
-                      <Badge
-                        variant="secondary"
-                        key={option.value}
-                        className="rounded-sm px-1 font-normal"
-                      >
-                        {option.label}
-                      </Badge>
-                    ))
-                )}
-              </div>
-            </>
-          )}
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        {options.map(option => {
-          const isSelected = filterValues.includes(option.value);
-          return (
-            <DropdownMenuCheckboxItem
-              key={option.value}
-              checked={isSelected}
-              onCheckedChange={() => {
-                const newFilterValues = isSelected
-                  ? filterValues.filter(v => v !== option.value)
-                  : [...filterValues, option.value];
-                column?.setFilterValue(
-                  newFilterValues.length ? newFilterValues : undefined
-                );
-              }}
-            >
-              {option.icon && (
-                <option.icon className="mr-2 size-4 text-muted-foreground" />
-              )}
-              <span>{option.label}</span>
-            </DropdownMenuCheckboxItem>
-          );
-        })}
-        {filterValues.length > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => column?.setFilterValue(undefined)}
-              className="justify-center text-center"
-            >
-              Clear filters
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
 export function CaseDataTable({ data }: { data: CaseData[] }) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
@@ -404,14 +280,12 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
       sorting,
       columnVisibility,
       rowSelection,
-      columnFilters,
       pagination,
     },
     getRowId: row => row.id,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
@@ -424,46 +298,8 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
 
   return (
     <div className="w-full flex-col justify-start gap-6">
-      <div className="flex items-center justify-between px-4 lg:px-6 mb-6">
+      <div className="flex items-center justify-end px-4 lg:px-6 mb-6">
         <div className="flex items-center gap-2">
-          <DataTableFilter
-            column={table.getColumn("type")}
-            title="Type"
-            options={[
-              {
-                value: "ADMINISTRATIVE",
-                label: "Administrative",
-                icon: IconBriefcase,
-              },
-              { value: "CIVIL", label: "Civil", icon: IconScale },
-              { value: "CRIMINAL", label: "Criminal", icon: IconShieldLock },
-            ]}
-          />
-          <DataTableFilter
-            column={table.getColumn("status")}
-            title="Status"
-            options={[
-              {
-                value: "ARRAIGNMENT",
-                label: "Arraignment",
-                icon: IconClock,
-              },
-              { value: "PRETRIAL", label: "Pretrial", icon: IconLoader },
-              { value: "TRIAL", label: "Trial", icon: IconLoader },
-              {
-                value: "PROMULGATION",
-                label: "Promulgation",
-                icon: IconCheck,
-              },
-              { value: "REMEDIES", label: "Remedies", icon: IconCheck },
-              {
-                value: "PRELIMINARY_CONFERENCE",
-                label: "Preliminary Conference",
-                icon: IconClock,
-              },
-              { value: "DECISION", label: "Decision", icon: IconCheck },
-            ]}
-          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -638,101 +474,5 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
         </div>
       </div>
     </div>
-  );
-}
-
-function CaseCellViewer({ item }: { item: CaseData }) {
-  const isMobile = useIsMobile();
-
-  return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
-      <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.title}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.title}</DrawerTitle>
-          <DrawerDescription>Case details and management</DrawerDescription>
-        </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <form className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="title">Case Title</Label>
-              <Input id="title" defaultValue={item.title} />
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                defaultValue={item.description || ""}
-                placeholder="Enter case description..."
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Input id="type" defaultValue={item.type} disabled />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select defaultValue={item.status}>
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {item.type === "CRIMINAL" ? (
-                      <>
-                        <SelectItem value="ARRAIGNMENT">Arraignment</SelectItem>
-                        <SelectItem value="PRETRIAL">Pretrial</SelectItem>
-                        <SelectItem value="TRIAL">Trial</SelectItem>
-                        <SelectItem value="PROMULGATION">
-                          Promulgation
-                        </SelectItem>
-                        <SelectItem value="REMEDIES">Remedies</SelectItem>
-                      </>
-                    ) : (
-                      <>
-                        <SelectItem value="PRELIMINARY_CONFERENCE">
-                          Preliminary Conference
-                        </SelectItem>
-                        <SelectItem value="TRIAL">Trial</SelectItem>
-                        <SelectItem value="DECISION">Decision</SelectItem>
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="client">Client</Label>
-              <Input id="client" defaultValue={item.clientId} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label>Created</Label>
-                <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
-                  {item.createdAt.toLocaleDateString()}
-                </div>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label>Last Updated</Label>
-                <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
-                  {item.updatedAt.toLocaleDateString()}
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-        <DrawerFooter>
-          <Button>Save Changes</Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Close</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
   );
 }
