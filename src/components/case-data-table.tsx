@@ -60,6 +60,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { ChangeStatusModal } from "./change-status-modal";
 
 export const caseSchema = z.object({
   id: z.string(),
@@ -82,188 +83,203 @@ export const caseSchema = z.object({
 
 export type CaseData = z.infer<typeof caseSchema>;
 
-const columns: ColumnDef<CaseData>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
-          onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={value => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "title",
-    header: "Case Title",
-    cell: ({ row }) => {
-      return (
-        <Link href={`/cases/${row.original.id}`}>{row.original.title}</Link>
-      );
-    },
-    enableHiding: false,
-  },
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => {
-      const type = row.original.type;
-      const typeConfig = {
-        ADMINISTRATIVE: {
-          icon: IconBriefcase,
-          color: "text-blue-600",
-          bg: "bg-blue-100",
-        },
-        CIVIL: {
-          icon: IconScale,
-          color: "text-green-600",
-          bg: "bg-green-100",
-        },
-        CRIMINAL: {
-          icon: IconShieldLock,
-          color: "text-red-600",
-          bg: "bg-red-100",
-        },
-      };
-      const config = typeConfig[type];
-      const Icon = config.icon;
-
-      return (
-        <Badge
-          variant="outline"
-          className={`${config.color} ${config.bg} px-2 py-1`}
-        >
-          <Icon className="mr-1 size-3" />
-          {type.charAt(0) + type.slice(1).toLowerCase()}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status;
-      const statusConfig = {
-        ARRAIGNMENT: {
-          icon: IconClock,
-          color: "text-yellow-600",
-          bg: "bg-yellow-100",
-        },
-        PRETRIAL: {
-          icon: IconLoader,
-          color: "text-blue-600",
-          bg: "bg-blue-100",
-        },
-        TRIAL: {
-          icon: IconLoader,
-          color: "text-blue-600",
-          bg: "bg-blue-100",
-        },
-        PROMULGATION: {
-          icon: IconCheck,
-          color: "text-green-600",
-          bg: "bg-green-100",
-        },
-        REMEDIES: {
-          icon: IconCheck,
-          color: "text-green-600",
-          bg: "bg-green-100",
-        },
-        PRELIMINARY_CONFERENCE: {
-          icon: IconClock,
-          color: "text-yellow-600",
-          bg: "bg-yellow-100",
-        },
-        DECISION: {
-          icon: IconCheck,
-          color: "text-green-600",
-          bg: "bg-green-100",
-        },
-      };
-      const config = statusConfig[status];
-      const Icon = config.icon;
-
-      return (
-        <Badge
-          variant="outline"
-          className={`${config.color} ${config.bg} px-2 py-1`}
-        >
-          <Icon className="mr-1 size-3" />
-          {status.replace("_", " ")}
-        </Badge>
-      );
-    },
-  },
-  {
-    accessorKey: "clientId",
-    header: "Client",
-    cell: ({ row }) => (
-      <div className="font-medium">{row.original.clientId}</div>
-    ),
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created",
-    cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {row.original.createdAt.toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "updatedAt",
-    header: "Last Updated",
-    cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
-        {row.original.updatedAt.toLocaleDateString()}
-      </div>
-    ),
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-            size="icon"
-          >
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem asChild>
-            <Link href={`/cases/${row.id}/edit`}>Edit</Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>Archive</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
-
 export function CaseDataTable({ data }: { data: CaseData[] }) {
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [selectedCase, setSelectedCase] = React.useState<CaseData | null>(null);
+
+  const handleOpenModal = (caseData: CaseData) => {
+    setSelectedCase(caseData);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedCase(null);
+    setIsModalOpen(false);
+  };
+
+  const columns: ColumnDef<CaseData>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="Select all"
+          />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={value => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "title",
+      header: "Case Title",
+      cell: ({ row }) => {
+        return (
+          <Link href={`/cases/${row.original.id}`}>{row.original.title}</Link>
+        );
+      },
+      enableHiding: false,
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ row }) => {
+        const type = row.original.type;
+        const typeConfig = {
+          ADMINISTRATIVE: {
+            icon: IconBriefcase,
+            color: "text-blue-600",
+            bg: "bg-blue-100",
+          },
+          CIVIL: {
+            icon: IconScale,
+            color: "text-green-600",
+            bg: "bg-green-100",
+          },
+          CRIMINAL: {
+            icon: IconShieldLock,
+            color: "text-red-600",
+            bg: "bg-red-100",
+          },
+        };
+        const config = typeConfig[type];
+        const Icon = config.icon;
+
+        return (
+          <Badge
+            variant="outline"
+            className={`${config.color} ${config.bg} px-2 py-1`}
+          >
+            <Icon className="mr-1 size-3" />
+            {type.charAt(0) + type.slice(1).toLowerCase()}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status;
+        const statusConfig = {
+          ARRAIGNMENT: {
+            icon: IconClock,
+            color: "text-yellow-600",
+            bg: "bg-yellow-100",
+          },
+          PRETRIAL: {
+            icon: IconLoader,
+            color: "text-blue-600",
+            bg: "bg-blue-100",
+          },
+          TRIAL: {
+            icon: IconLoader,
+            color: "text-blue-600",
+            bg: "bg-blue-100",
+          },
+          PROMULGATION: {
+            icon: IconCheck,
+            color: "text-green-600",
+            bg: "bg-green-100",
+          },
+          REMEDIES: {
+            icon: IconCheck,
+            color: "text-green-600",
+            bg: "bg-green-100",
+          },
+          PRELIMINARY_CONFERENCE: {
+            icon: IconClock,
+            color: "text-yellow-600",
+            bg: "bg-yellow-100",
+          },
+          DECISION: {
+            icon: IconCheck,
+            color: "text-green-600",
+            bg: "bg-green-100",
+          },
+        };
+        const config = statusConfig[status];
+        const Icon = config.icon;
+
+        return (
+          <Badge
+            variant="outline"
+            className={`${config.color} ${config.bg} px-2 py-1`}
+          >
+            <Icon className="mr-1 size-3" />
+            {status.replace("_", " ")}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "clientId",
+      header: "Client",
+      cell: ({ row }) => (
+        <div className="font-medium">{row.original.clientId}</div>
+      ),
+    },
+    {
+      accessorKey: "createdAt",
+      header: "Created",
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground">
+          {row.original.createdAt.toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "updatedAt",
+      header: "Last Updated",
+      cell: ({ row }) => (
+        <div className="text-sm text-muted-foreground">
+          {row.original.updatedAt.toLocaleDateString()}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+              size="icon"
+            >
+              <IconDotsVertical />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuItem asChild>
+              <Link href={`/cases/${row.original.id}/edit`}>Edit</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleOpenModal(row.original)}>
+              Change Status
+            </DropdownMenuItem>
+            <DropdownMenuItem>Archive</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -395,6 +411,13 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
             </TableBody>
           </Table>
         </div>
+        {selectedCase && (
+          <ChangeStatusModal
+            caseData={selectedCase}
+            isOpen={isModalOpen}
+            onClose={handleCloseModal}
+          />
+        )}
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}

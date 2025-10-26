@@ -1,7 +1,7 @@
 "use server";
 
 import { getAuthSession } from "@/data/auth";
-import { Case } from "@/generated/prisma";
+import { Case, CaseStatus } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
@@ -40,6 +40,24 @@ export async function updateCase(id: string, formData: Partial<CreateCase>) {
       where: { id },
       data: {
         ...formData,
+        updatedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/cases");
+    return { success: true, data: updatedCase };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function updateCaseStatus(id: string, status: CaseStatus) {
+  await getAuthSession();
+  try {
+    const updatedCase = await prisma.case.update({
+      where: { id },
+      data: {
+        status,
         updatedAt: new Date(),
       },
     });
