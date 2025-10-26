@@ -177,7 +177,7 @@ export function AddClientModal() {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {form.watch("birthday") ? (
-                    format(form.watch("birthday"), "PPP")
+                    format(form.watch("birthday") as Date, "PPP")
                   ) : (
                     <span>Pick a date</span>
                   )}
