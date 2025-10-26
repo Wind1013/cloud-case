@@ -23,11 +23,8 @@ async function Cases({ searchParams }: CasesPageProps) {
     title: item.title,
     description: item.description || "",
     clientId: item.client.name,
-    status: "IN_PROGRESS" as
-      | "PENDING"
-      | "IN_PROGRESS"
-      | "COMPLETED"
-      | "DISMISSED",
+    status: item.status,
+    type: item.type,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt,
   }));

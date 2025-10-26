@@ -5,18 +5,22 @@ import { Case } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export type CreateCase = Pick<Case, "title" | "description" | "clientId">;
+export type CreateCase = Pick<
+  Case,
+  "title" | "description" | "clientId" | "type" | "status"
+>;
 export async function createCase(formData: CreateCase) {
   await getAuthSession();
   try {
-    const { title, description, clientId } = formData;
+    const { title, description, clientId, type, status } = formData;
 
     const newCase = await prisma.case.create({
       data: {
         title,
         description,
-        status: "PENDING",
         clientId,
+        type,
+        status,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

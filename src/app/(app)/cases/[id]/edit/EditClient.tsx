@@ -16,7 +16,7 @@ function EditClient({
   caseData: Case;
 }) {
   const router = useRouter();
-  const { description, title, clientId, id } = caseData;
+  const { description, title, clientId, id, type, status } = caseData;
 
   const onSubmit = async (data: CaseFormValues) => {
     try {
@@ -33,7 +33,7 @@ function EditClient({
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-8 rounded-xl shadow-lg bg-gray-50 border border-gray-200 mt-10">
+    <div className="max-w-7xl mx-auto">
       <CaseFilingForm
         clients={clients}
         onSubmit={onSubmit}
@@ -41,6 +41,8 @@ function EditClient({
           clientId,
           description: description || "",
           title,
+          type,
+          status,
         }}
       />
     </div>

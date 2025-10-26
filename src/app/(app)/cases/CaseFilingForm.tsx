@@ -30,12 +30,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useTransition } from "react";
+import { useTransition, useEffect } from "react";
 
 const caseSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   description: z.string().min(1, { message: "Description is required" }),
   clientId: z.string().min(1, { message: "Client is required" }),
+  type: z.enum(["ADMINISTRATIVE", "CIVIL", "CRIMINAL"]),
+  status: z.enum([
+    "ARRAIGNMENT",
+    "PRETRIAL",
+    "TRIAL",
+    "PROMULGATION",
+    "REMEDIES",
+    "PRELIMINARY_CONFERENCE",
+    "DECISION",
+  ]),
   // document: z.string().optional(),
 });
 
@@ -56,9 +66,21 @@ export default function CaseFilingForm({
       title: "",
       description: "",
       clientId: "",
+      type: "CIVIL",
+      status: "PRELIMINARY_CONFERENCE",
     },
   });
   const [isPending, startTransition] = useTransition();
+
+  const caseType = form.watch("type");
+
+  useEffect(() => {
+    if (caseType === "CRIMINAL") {
+      form.setValue("status", "ARRAIGNMENT");
+    } else {
+      form.setValue("status", "PRELIMINARY_CONFERENCE");
+    }
+  }, [caseType, form]);
 
   async function onPrepareSubmit(values: CaseFormValues) {
     startTransition(() => onSubmit(values));
@@ -126,6 +148,84 @@ export default function CaseFilingForm({
                           placeholder="Enter a descriptive case title"
                           {...field}
                         />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Case Type *</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a case type" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="ADMINISTRATIVE">
+                              Administrative
+                            </SelectItem>
+                            <SelectItem value="CIVIL">Civil</SelectItem>
+                            <SelectItem value="CRIMINAL">Criminal</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select a status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {form.watch("type") === "CRIMINAL" ? (
+                              <>
+                                <SelectItem value="ARRAIGNMENT">
+                                  Arraignment
+                                </SelectItem>
+                                <SelectItem value="PRETRIAL">
+                                  Pretrial
+                                </SelectItem>
+                                <SelectItem value="TRIAL">Trial</SelectItem>
+                                <SelectItem value="PROMULGATION">
+                                  Promulgation
+                                </SelectItem>
+                                <SelectItem value="REMEDIES">
+                                  Remedies
+                                </SelectItem>
+                              </>
+                            ) : (
+                              <>
+                                <SelectItem value="PRELIMINARY_CONFERENCE">
+                                  Preliminary Conference
+                                </SelectItem>
+                                <SelectItem value="TRIAL">Trial</SelectItem>
+                                <SelectItem value="DECISION">
+                                  Decision
+                                </SelectItem>
+                              </>
+                            )}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

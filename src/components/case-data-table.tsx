@@ -2,20 +2,25 @@
 
 import * as React from "react";
 import {
+  IconBriefcase,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
   IconDotsVertical,
+  IconFilter,
   IconLayoutColumns,
   IconLoader,
   IconPlus,
+  IconScale,
+  IconShieldLock,
   IconClock,
   IconCheck,
   IconX,
 } from "@tabler/icons-react";
 import {
+  type Column,
   type ColumnDef,
   type ColumnFiltersState,
   flexRender,
@@ -78,7 +83,16 @@ export const caseSchema = z.object({
   id: z.string(),
   title: z.string(),
   description: z.string().optional(),
-  status: z.enum(["PENDING", "IN_PROGRESS", "COMPLETED", "DISMISSED"]),
+  status: z.enum([
+    "ARRAIGNMENT",
+    "PRETRIAL",
+    "TRIAL",
+    "PROMULGATION",
+    "REMEDIES",
+    "PRELIMINARY_CONFERENCE",
+    "DECISION",
+  ]),
+  type: z.enum(["ADMINISTRATIVE", "CIVIL", "CRIMINAL"]),
   clientId: z.string(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -124,27 +138,85 @@ const columns: ColumnDef<CaseData>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => {
+      const type = row.original.type;
+      const typeConfig = {
+        ADMINISTRATIVE: {
+          icon: IconBriefcase,
+          color: "text-blue-600",
+          bg: "bg-blue-100",
+        },
+        CIVIL: {
+          icon: IconScale,
+          color: "text-green-600",
+          bg: "bg-green-100",
+        },
+        CRIMINAL: {
+          icon: IconShieldLock,
+          color: "text-red-600",
+          bg: "bg-red-100",
+        },
+      };
+      const config = typeConfig[type];
+      const Icon = config.icon;
+
+      return (
+        <Badge
+          variant="outline"
+          className={`${config.color} ${config.bg} px-2 py-1`}
+        >
+          <Icon className="mr-1 size-3" />
+          {type.charAt(0) + type.slice(1).toLowerCase()}
+        </Badge>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status;
       const statusConfig = {
-        PENDING: {
+        ARRAIGNMENT: {
           icon: IconClock,
           color: "text-yellow-600",
           bg: "bg-yellow-100",
         },
-        IN_PROGRESS: {
+        PRETRIAL: {
           icon: IconLoader,
           color: "text-blue-600",
           bg: "bg-blue-100",
         },
-        COMPLETED: {
+        TRIAL: {
+          icon: IconLoader,
+          color: "text-blue-600",
+          bg: "bg-blue-100",
+        },
+        PROMULGATION: {
           icon: IconCheck,
           color: "text-green-600",
           bg: "bg-green-100",
         },
-        DISMISSED: { icon: IconX, color: "text-red-600", bg: "bg-red-100" },
+        REMEDIES: {
+          icon: IconCheck,
+          color: "text-green-600",
+          bg: "bg-green-100",
+        },
+        PRELIMINARY_CONFERENCE: {
+          icon: IconClock,
+          color: "text-yellow-600",
+          bg: "bg-yellow-100",
+        },
+        DECISION: {
+          icon: IconCheck,
+          color: "text-green-600",
+          bg: "bg-green-100",
+        },
       };
       const config = statusConfig[status];
       const Icon = config.icon;
@@ -158,6 +230,9 @@ const columns: ColumnDef<CaseData>[] = [
           {status.replace("_", " ")}
         </Badge>
       );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
     },
   },
   {
@@ -212,6 +287,103 @@ const columns: ColumnDef<CaseData>[] = [
   },
 ];
 
+interface DataTableFilterProps<TData, TValue> {
+  column: Column<TData, TValue> | undefined;
+  title: string;
+  options: {
+    label: string;
+    value: string;
+    icon?: React.ComponentType<{ className?: string }>;
+  }[];
+}
+
+function DataTableFilter<TData, TValue>({
+  column,
+  title,
+  options,
+}: DataTableFilterProps<TData, TValue>) {
+  const filterValues = (column?.getFilterValue() as string[]) || [];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 border-dashed">
+          <IconFilter className="mr-2 size-4" />
+          {title}
+          {filterValues.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <Badge
+                variant="secondary"
+                className="rounded-sm px-1 font-normal lg:hidden"
+              >
+                {filterValues.length}
+              </Badge>
+              <div className="hidden space-x-1 lg:flex">
+                {filterValues.length > 2 ? (
+                  <Badge
+                    variant="secondary"
+                    className="rounded-sm px-1 font-normal"
+                  >
+                    {filterValues.length} selected
+                  </Badge>
+                ) : (
+                  options
+                    .filter(option => filterValues.includes(option.value))
+                    .map(option => (
+                      <Badge
+                        variant="secondary"
+                        key={option.value}
+                        className="rounded-sm px-1 font-normal"
+                      >
+                        {option.label}
+                      </Badge>
+                    ))
+                )}
+              </div>
+            </>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        {options.map(option => {
+          const isSelected = filterValues.includes(option.value);
+          return (
+            <DropdownMenuCheckboxItem
+              key={option.value}
+              checked={isSelected}
+              onCheckedChange={() => {
+                const newFilterValues = isSelected
+                  ? filterValues.filter(v => v !== option.value)
+                  : [...filterValues, option.value];
+                column?.setFilterValue(
+                  newFilterValues.length ? newFilterValues : undefined
+                );
+              }}
+            >
+              {option.icon && (
+                <option.icon className="mr-2 size-4 text-muted-foreground" />
+              )}
+              <span>{option.label}</span>
+            </DropdownMenuCheckboxItem>
+          );
+        })}
+        {filterValues.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => column?.setFilterValue(undefined)}
+              className="justify-center text-center"
+            >
+              Clear filters
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function CaseDataTable({ data }: { data: CaseData[] }) {
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -254,6 +426,44 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
     <div className="w-full flex-col justify-start gap-6">
       <div className="flex items-center justify-between px-4 lg:px-6 mb-6">
         <div className="flex items-center gap-2">
+          <DataTableFilter
+            column={table.getColumn("type")}
+            title="Type"
+            options={[
+              {
+                value: "ADMINISTRATIVE",
+                label: "Administrative",
+                icon: IconBriefcase,
+              },
+              { value: "CIVIL", label: "Civil", icon: IconScale },
+              { value: "CRIMINAL", label: "Criminal", icon: IconShieldLock },
+            ]}
+          />
+          <DataTableFilter
+            column={table.getColumn("status")}
+            title="Status"
+            options={[
+              {
+                value: "ARRAIGNMENT",
+                label: "Arraignment",
+                icon: IconClock,
+              },
+              { value: "PRETRIAL", label: "Pretrial", icon: IconLoader },
+              { value: "TRIAL", label: "Trial", icon: IconLoader },
+              {
+                value: "PROMULGATION",
+                label: "Promulgation",
+                icon: IconCheck,
+              },
+              { value: "REMEDIES", label: "Remedies", icon: IconCheck },
+              {
+                value: "PRELIMINARY_CONFERENCE",
+                label: "Preliminary Conference",
+                icon: IconClock,
+              },
+              { value: "DECISION", label: "Decision", icon: IconCheck },
+            ]}
+          />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -463,16 +673,35 @@ function CaseCellViewer({ item }: { item: CaseData }) {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
+                <Label htmlFor="type">Type</Label>
+                <Input id="type" defaultValue={item.type} disabled />
+              </div>
+              <div className="flex flex-col gap-3">
                 <Label htmlFor="status">Status</Label>
                 <Select defaultValue={item.status}>
                   <SelectTrigger id="status" className="w-full">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="PENDING">Pending</SelectItem>
-                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                    <SelectItem value="COMPLETED">Completed</SelectItem>
-                    <SelectItem value="DISMISSED">Dismissed</SelectItem>
+                    {item.type === "CRIMINAL" ? (
+                      <>
+                        <SelectItem value="ARRAIGNMENT">Arraignment</SelectItem>
+                        <SelectItem value="PRETRIAL">Pretrial</SelectItem>
+                        <SelectItem value="TRIAL">Trial</SelectItem>
+                        <SelectItem value="PROMULGATION">
+                          Promulgation
+                        </SelectItem>
+                        <SelectItem value="REMEDIES">Remedies</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="PRELIMINARY_CONFERENCE">
+                          Preliminary Conference
+                        </SelectItem>
+                        <SelectItem value="TRIAL">Trial</SelectItem>
+                        <SelectItem value="DECISION">Decision</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

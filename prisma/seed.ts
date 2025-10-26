@@ -360,7 +360,8 @@ async function main() {
         title: "Personal Injury Claim - Car Accident",
         description:
           "Client involved in rear-end collision. Seeking compensation for medical expenses and lost wages.",
-        status: "ACTIVE",
+        type: "CIVIL",
+        status: "PRELIMINARY_CONFERENCE",
         clientId: "client-1",
       },
     }),
@@ -369,7 +370,8 @@ async function main() {
         title: "Divorce Proceedings - Garcia vs Garcia",
         description:
           "Contested divorce case involving child custody and property division.",
-        status: "ACTIVE",
+        type: "CIVIL",
+        status: "PRELIMINARY_CONFERENCE",
         clientId: "client-2",
       },
     }),
@@ -378,7 +380,8 @@ async function main() {
         title: "Contract Dispute - Business Partnership",
         description:
           "Commercial dispute over partnership agreement and profit sharing.",
-        status: "PENDING",
+        type: "CIVIL",
+        status: "PRELIMINARY_CONFERENCE",
         clientId: "client-3",
       },
     }),
@@ -386,7 +389,8 @@ async function main() {
       data: {
         title: "Employment Discrimination Case",
         description: "Workplace discrimination claim based on gender and age.",
-        status: "ACTIVE",
+        type: "ADMINISTRATIVE",
+        status: "PRELIMINARY_CONFERENCE",
         clientId: "client-4",
       },
     }),
@@ -395,7 +399,8 @@ async function main() {
         title: "Real Estate Transaction Dispute",
         description:
           "Issues with property disclosure and contract terms in home purchase.",
-        status: "CLOSED",
+        type: "CIVIL",
+        status: "DECISION",
         clientId: "client-5",
       },
     }),
@@ -403,7 +408,8 @@ async function main() {
       data: {
         title: "Criminal Defense - DUI Charge",
         description: "First-time DUI offense, negotiating plea agreement.",
-        status: "ACTIVE",
+        type: "CRIMINAL",
+        status: "ARRAIGNMENT",
         clientId: "client-1",
       },
     }),
@@ -411,7 +417,8 @@ async function main() {
       data: {
         title: "Bankruptcy Filing - Chapter 7",
         description: "Personal bankruptcy case due to medical debt.",
-        status: "PENDING",
+        type: "CIVIL",
+        status: "PRELIMINARY_CONFERENCE",
         clientId: "client-2",
       },
     }),
@@ -419,7 +426,8 @@ async function main() {
       data: {
         title: "Immigration Case - Green Card Application",
         description: "Family-based green card application process.",
-        status: "ACTIVE",
+        type: "ADMINISTRATIVE",
+        status: "PRELIMINARY_CONFERENCE",
         clientId: "client-3",
       },
     }),
@@ -428,7 +436,8 @@ async function main() {
         title: "Estate Planning - Will and Trust",
         description:
           "Comprehensive estate planning including will, trust, and power of attorney.",
-        status: "ARCHIVED",
+        type: "CIVIL",
+        status: "DECISION",
         clientId: "client-4",
       },
     }),
@@ -437,7 +446,8 @@ async function main() {
         title: "Intellectual Property - Trademark Filing",
         description:
           "Trademark registration for client's business logo and brand name.",
-        status: "CLOSED",
+        type: "ADMINISTRATIVE",
+        status: "DECISION",
         clientId: "client-5",
       },
     }),

@@ -20,11 +20,20 @@ enum UserRole {
   CLIENT
 }
 
+enum CaseType {
+  ADMINISTRATIVE
+  CIVIL
+  CRIMINAL
+}
+
 enum CaseStatus {
-  ACTIVE
-  CLOSED
-  PENDING
-  ARCHIVED
+  ARRAIGNMENT
+  PRETRIAL
+  TRIAL
+  PROMULGATION
+  REMEDIES
+  PRELIMINARY_CONFERENCE
+  DECISION
 }
 
 enum Gender {
@@ -122,7 +131,8 @@ model Case {
   id          String     @id @default(cuid())
   title       String
   description String?
-  status      CaseStatus @default(PENDING)
+  type        CaseType   @default(CIVIL)
+  status      CaseStatus @default(PRELIMINARY_CONFERENCE)
   clientId    String
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
