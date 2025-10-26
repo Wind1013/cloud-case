@@ -2,16 +2,13 @@
 
 import {
   IconBriefcase,
-  IconCheck,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconClock,
   IconDotsVertical,
   IconLayoutColumns,
-  IconLoader,
   IconPlus,
   IconScale,
   IconShieldLock,
@@ -61,6 +58,7 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { ChangeStatusModal } from "./change-status-modal";
+import StatusBadge from "./status-badge";
 
 export const caseSchema = z.object({
   id: z.string(),
@@ -85,7 +83,9 @@ export type CaseData = z.infer<typeof caseSchema>;
 
 export function CaseDataTable({ data }: { data: CaseData[] }) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [selectedCase, setSelectedCase] = React.useState<CaseData | null>(null);
+  const [selectedCase, setSelectedCase] = React.useState<CaseData | null>(
+    null
+  );
 
   const handleOpenModal = (caseData: CaseData) => {
     setSelectedCase(caseData);
@@ -173,58 +173,7 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ row }) => {
-        const status = row.original.status;
-        const statusConfig = {
-          ARRAIGNMENT: {
-            icon: IconClock,
-            color: "text-yellow-600",
-            bg: "bg-yellow-100",
-          },
-          PRETRIAL: {
-            icon: IconLoader,
-            color: "text-blue-600",
-            bg: "bg-blue-100",
-          },
-          TRIAL: {
-            icon: IconLoader,
-            color: "text-blue-600",
-            bg: "bg-blue-100",
-          },
-          PROMULGATION: {
-            icon: IconCheck,
-            color: "text-green-600",
-            bg: "bg-green-100",
-          },
-          REMEDIES: {
-            icon: IconCheck,
-            color: "text-green-600",
-            bg: "bg-green-100",
-          },
-          PRELIMINARY_CONFERENCE: {
-            icon: IconClock,
-            color: "text-yellow-600",
-            bg: "bg-yellow-100",
-          },
-          DECISION: {
-            icon: IconCheck,
-            color: "text-green-600",
-            bg: "bg-green-100",
-          },
-        };
-        const config = statusConfig[status];
-        const Icon = config.icon;
-
-        return (
-          <Badge
-            variant="outline"
-            className={`${config.color} ${config.bg} px-2 py-1`}
-          >
-            <Icon className="mr-1 size-3" />
-            {status.replace("_", " ")}
-          </Badge>
-        );
-      },
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       accessorKey: "clientId",

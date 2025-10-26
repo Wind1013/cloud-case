@@ -1,4 +1,4 @@
-import { Check, Clock, Loader, LucideIcon, X } from "lucide-react";
+import { Check, Clock, Loader, LucideIcon } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { CaseStatus } from "@/generated/prisma";
 
@@ -10,25 +10,40 @@ interface StatusConfig {
 
 const StatusBadge = ({ status }: { status: CaseStatus }) => {
   const statusConfig: Record<CaseStatus, StatusConfig> = {
-    PENDING: {
+    ARRAIGNMENT: {
       icon: Clock,
       color: "text-yellow-600",
       bg: "bg-yellow-100",
     },
-    ACTIVE: {
+    PRETRIAL: {
       icon: Loader,
       color: "text-blue-600",
       bg: "bg-blue-100",
     },
-    ARCHIVED: {
+    TRIAL: {
+      icon: Loader,
+      color: "text-blue-600",
+      bg: "bg-blue-100",
+    },
+    PROMULGATION: {
       icon: Check,
       color: "text-green-600",
       bg: "bg-green-100",
     },
-    CLOSED: {
-      icon: X,
-      color: "text-red-600",
-      bg: "bg-red-100",
+    REMEDIES: {
+      icon: Check,
+      color: "text-green-600",
+      bg: "bg-green-100",
+    },
+    PRELIMINARY_CONFERENCE: {
+      icon: Clock,
+      color: "text-yellow-600",
+      bg: "bg-yellow-100",
+    },
+    DECISION: {
+      icon: Check,
+      color: "text-green-600",
+      bg: "bg-green-100",
     },
   };
 
