@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/prisma";
-import { sendEmail } from './email';
+import { sendEmail } from "./email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -10,8 +10,12 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({user, url}) => {
-      await sendEmail({to: user.email, subject: "Verify your email", text: `Click the link to verify your email ${url}`})
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Verify your email",
+        text: `Click the link to verify your email ${url}`,
+      });
     },
   },
   user: {
@@ -48,5 +52,19 @@ export const auth = betterAuth({
   },
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password",
+        text: `Click the link to reset your password: ${url}`,
+      });
+    },
+    onPasswordReset: async ({ user }) => {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset password successful",
+        text: "You have reset your password sucessfully",
+      });
+    },
   },
 });

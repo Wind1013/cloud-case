@@ -9,6 +9,8 @@ import { signIn } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
 export function LoginForm({
   className,
@@ -33,6 +35,7 @@ export function LoginForm({
     if (res.error) {
       setError(res.error.message || "Something went wrong.");
     } else {
+      toast.success("Sign in successful");
       router.push("/dashboard");
     }
 
@@ -63,12 +66,12 @@ export function LoginForm({
                 <div className="grid gap-3">
                   <div className="flex items-center">
                     <Label htmlFor="password">Password</Label>
-                    <a
-                      href="#"
+                    <Link
+                      href="/forgot-password"
                       className="ml-auto text-sm underline-offset-4 hover:underline"
                     >
                       Forgot your password?
-                    </a>
+                    </Link>
                   </div>
                   <Input
                     id="password"

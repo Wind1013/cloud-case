@@ -3,7 +3,7 @@ import { createAuthClient } from "better-auth/react";
 import { auth } from "./auth";
 import { nextCookies } from "better-auth/next-js";
 
-export const { signIn, signUp, signOut, useSession, getSession } =
+export const { signIn, signUp, signOut, useSession, getSession, requestPasswordReset, resetPassword } =
   createAuthClient({
     plugins: [
       inferAdditionalFields<typeof auth>({
