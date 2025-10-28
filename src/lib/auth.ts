@@ -17,6 +17,7 @@ export const auth = betterAuth({
         text: `Click the link to verify your email ${url}`,
       });
     },
+    sendOnSignIn: true,
   },
   user: {
     additionalFields: {
@@ -63,7 +64,7 @@ export const auth = betterAuth({
       await sendEmail({
         to: user.email,
         subject: "Reset password successful",
-        text: "You have reset your password sucessfully",
+        text: "Your password has been reset",
       });
     },
   },
