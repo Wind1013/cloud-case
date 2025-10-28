@@ -1,15 +1,16 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { sendSignInEmail } from "@/actions/email";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
 import { Loader } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export function LoginForm({
@@ -27,10 +28,18 @@ export function LoginForm({
 
     const formData = new FormData(e.currentTarget);
 
-    const res = await signIn.email({
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-    });
+    const res = await signIn.email(
+      {
+        email: formData.get("email") as string,
+        password: formData.get("password") as string,
+        rememberMe: true,
+      },
+      {
+        onSuccess: async () => {
+          sendSignInEmail({ email: formData.get("email") as string });
+        },
+      }
+    );
 
     if (res.error) {
       setError(res.error.message || "Something went wrong.");
