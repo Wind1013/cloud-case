@@ -49,7 +49,10 @@ export function SignUpForm({
     };
 
     try {
-      const res = await signUp.email(userData);
+      const res = await signUp.email({
+        ...userData,
+        callbackURL: "/email-verified",
+      });
 
       if (res.error) {
         setError(res.error.message || "Something went wrong.");
@@ -176,7 +179,7 @@ export function SignUpForm({
 
               <div className="text-center text-sm">
                 Already have an account?{" "}
-                <a href="/login" className="underline underline-offset-4">
+                <a href="/sign-in" className="underline underline-offset-4">
                   Sign in
                 </a>
               </div>

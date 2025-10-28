@@ -3,6 +3,7 @@ type Config = {
   AWS_SECRET_ACCESS_KEY: string;
   S3_BUCKET_NAME: string;
   AWS_ENDPOINT_URL_S3: string;
+  RESEND_API_KEY: string;
 };
 
 function envOrThrow(key: string) {
@@ -18,4 +19,5 @@ export const config: Config = {
   AWS_SECRET_ACCESS_KEY: envOrThrow("AWS_SECRET_ACCESS_KEY"),
   S3_BUCKET_NAME: envOrThrow("S3_BUCKET_NAME"),
   AWS_ENDPOINT_URL_S3: envOrThrow("AWS_ENDPOINT_URL_S3"),
+  RESEND_API_KEY: envOrThrow("RESEND_API_KEY"),
 };
