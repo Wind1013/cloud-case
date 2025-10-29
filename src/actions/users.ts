@@ -1,7 +1,8 @@
 "use server";
 
-import { UserRole, Gender } from "@/generated/prisma";
+import { Gender, UserRole } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 export interface GetUsersParams {
@@ -76,7 +77,63 @@ export async function createUser(formData: FormData) {
   }
 }
 
-import { revalidatePath } from "next/cache";
+export async function updateUser(id: string, formData: FormData) {
+  const validatedFields = createUserSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    middleName: formData.get("middleName"),
+    gender: formData.get("gender"),
+    birthday: formData.get("birthday"),
+    image: formData.get("image"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      error: "Invalid fields",
+    };
+  }
+
+  const {
+    name,
+    email,
+    phone,
+    firstName,
+    lastName,
+    middleName,
+    gender,
+    birthday,
+    image,
+  } = validatedFields.data;
+
+  try {
+    await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        name,
+        email,
+        phone,
+        firstName,
+        lastName,
+        middleName,
+        gender,
+        birthday: birthday ? new Date(birthday) : undefined,
+        image,
+      },
+    });
+    return {
+      success: "Client updated successfully",
+    };
+  } catch (error) {
+    return {
+      error: "Failed to update client",
+    };
+  }
+}
 
 export async function updateAccount(
   id: string,
