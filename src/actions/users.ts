@@ -39,7 +39,17 @@ export async function createUser(formData: FormData) {
     };
   }
 
-  const { name, email, phone, firstName, lastName, middleName, gender, birthday, image } = validatedFields.data;
+  const {
+    name,
+    email,
+    phone,
+    firstName,
+    lastName,
+    middleName,
+    gender,
+    birthday,
+    image,
+  } = validatedFields.data;
 
   try {
     await prisma.user.create({
@@ -66,50 +76,37 @@ export async function createUser(formData: FormData) {
   }
 }
 
-export async function updateUser(id: string, formData: FormData) {
-  const validatedFields = createUserSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    phone: formData.get("phone"),
-    firstName: formData.get("firstName"),
-    lastName: formData.get("lastName"),
-    middleName: formData.get("middleName"),
-    gender: formData.get("gender"),
-    birthday: formData.get("birthday"),
-    image: formData.get("image"),
-  });
+import { revalidatePath } from "next/cache";
 
-  if (!validatedFields.success) {
-    return {
-      error: "Invalid fields",
-    };
+export async function updateAccount(
+  id: string,
+  data: {
+    name: string;
+    firstName?: string;
+    lastName?: string;
+    middleName?: string;
+    gender: "MALE" | "FEMALE";
+    birthday?: string;
+    phone?: string;
+    image?: string;
   }
-
-  const { name, email, phone, firstName, lastName, middleName, gender, birthday, image } = validatedFields.data;
-
+) {
   try {
     await prisma.user.update({
-      where: {
-        id,
-      },
+      where: { id },
       data: {
-        name,
-        email,
-        phone,
-        firstName,
-        lastName,
-        middleName,
-        gender,
-        birthday: birthday ? new Date(birthday) : undefined,
-        image,
+        ...data,
+        birthday: data.birthday ? new Date(data.birthday) : undefined,
       },
     });
+
+    revalidatePath("/account");
     return {
-      success: "Client updated successfully",
+      success: "Account updated successfully",
     };
   } catch (error) {
     return {
-      error: "Failed to update client",
+      error: "Failed to update account",
     };
   }
 }
