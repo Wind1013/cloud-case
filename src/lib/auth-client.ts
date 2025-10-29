@@ -11,6 +11,7 @@ export const {
   getSession,
   requestPasswordReset,
   resetPassword,
+  changePassword,
   changeEmail,
   sendVerificationEmail,
 } = createAuthClient({

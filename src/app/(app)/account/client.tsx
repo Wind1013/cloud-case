@@ -117,6 +117,12 @@ function EmailSection({
         >
           Change Email
         </Link>
+        <Link
+          href="/account/change-password"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          Change Password
+        </Link>
       </div>
     </div>
   );
