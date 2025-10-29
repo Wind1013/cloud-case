@@ -12,6 +12,7 @@ export const {
   requestPasswordReset,
   resetPassword,
   changeEmail,
+  sendVerificationEmail,
 } = createAuthClient({
   plugins: [
     inferAdditionalFields<typeof auth>({

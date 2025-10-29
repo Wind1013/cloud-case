@@ -21,7 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useRouter } from "next/navigation";
+import { sendVerificationEmail } from "@/lib/auth-client";
+import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -74,6 +75,21 @@ function EmailSection({
   email: string;
   isVerified: boolean;
 }) {
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleVerifyEmail = async () => {
+    setIsLoading(true);
+    const toastId = toast.loading("Sending verification email...");
+    try {
+      await sendVerificationEmail({ email });
+      toast.success("Verification email sent.", { id: toastId });
+    } catch (error) {
+      toast.error("Failed to send verification email.", { id: toastId });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex flex-col space-y-1">
@@ -88,18 +104,25 @@ function EmailSection({
           </Badge>
         )}
       </div>
-      <Link
-        href="/account/change-email"
-        className={buttonVariants({ variant: "outline" })}
-      >
-        Change Email
-      </Link>
+      <div className="flex items-center gap-2">
+        {!isVerified && (
+          <Button onClick={handleVerifyEmail} disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Verify Email
+          </Button>
+        )}
+        <Link
+          href="/account/change-email"
+          className={buttonVariants({ variant: "outline" })}
+        >
+          Change Email
+        </Link>
+      </div>
     </div>
   );
 }
 
 function ProfileForm({ user }: { user: User }) {
-  const router = useRouter();
   const form = useForm<AccountFormValues>({
     mode: "all",
     resolver: zodResolver(accountFormSchema),
@@ -117,8 +140,6 @@ function ProfileForm({ user }: { user: User }) {
       email: user.email, // This is needed by the schema
     },
   });
-
-  const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(data: AccountFormValues) {
     const toastId = toast.loading("Updating account...");
