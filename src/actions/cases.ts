@@ -68,3 +68,35 @@ export async function updateCaseStatus(id: string, status: CaseStatus) {
     return { success: false, error: (error as Error).message };
   }
 }
+
+export async function archiveCase(id: string) {
+  await getAuthSession();
+  try {
+    const updatedCase = await prisma.case.update({
+      where: { id },
+      data: {
+        status: "ARCHIVED",
+        updatedAt: new Date(),
+      },
+    });
+
+    revalidatePath("/cases");
+    return { success: true, data: updatedCase };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function deleteCase(id: string) {
+  await getAuthSession();
+  try {
+    await prisma.case.delete({
+      where: { id },
+    });
+
+    revalidatePath("/cases");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}

@@ -19,6 +19,7 @@ import {
   IconClock,
   IconLoader,
   IconCheck,
+  IconArchive,
 } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -40,6 +41,7 @@ const caseStatuses = [
     icon: IconClock,
   },
   { value: "DECISION", label: "Decision", icon: IconCheck },
+  { value: "ARCHIVED", label: "Archived", icon: IconArchive },
 ];
 
 export function CaseFilters() {

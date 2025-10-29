@@ -34,6 +34,7 @@ enum CaseStatus {
   REMEDIES
   PRELIMINARY_CONFERENCE
   DECISION
+  ARCHIVED
 }
 
 enum Gender {

@@ -59,6 +59,9 @@ import {
 import Link from "next/link";
 import { ChangeStatusModal } from "./change-status-modal";
 import StatusBadge from "./status-badge";
+import { ConfirmDialog } from "./confirm-dialog";
+import { archiveCase, deleteCase } from "@/actions/cases";
+import { toast } from "sonner";
 
 export const caseSchema = z.object({
   id: z.string(),
@@ -72,6 +75,7 @@ export const caseSchema = z.object({
     "REMEDIES",
     "PRELIMINARY_CONFERENCE",
     "DECISION",
+    "ARCHIVED",
   ]),
   type: z.enum(["ADMINISTRATIVE", "CIVIL", "CRIMINAL"]),
   clientId: z.string(),
@@ -83,9 +87,9 @@ export type CaseData = z.infer<typeof caseSchema>;
 
 export function CaseDataTable({ data }: { data: CaseData[] }) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
-  const [selectedCase, setSelectedCase] = React.useState<CaseData | null>(
-    null
-  );
+  const [isArchiveModalOpen, setIsArchiveModalOpen] = React.useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [selectedCase, setSelectedCase] = React.useState<CaseData | null>(null);
 
   const handleOpenModal = (caseData: CaseData) => {
     setSelectedCase(caseData);
@@ -97,33 +101,51 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
     setIsModalOpen(false);
   };
 
+  const handleOpenArchiveModal = (caseData: CaseData) => {
+    setSelectedCase(caseData);
+    setIsArchiveModalOpen(true);
+  };
+
+  const handleCloseArchiveModal = () => {
+    setSelectedCase(null);
+    setIsArchiveModalOpen(false);
+  };
+
+  const handleOpenDeleteModal = (caseData: CaseData) => {
+    setSelectedCase(caseData);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setSelectedCase(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleArchive = async () => {
+    if (selectedCase) {
+      const result = await archiveCase(selectedCase.id);
+      if (result.success) {
+        toast.success("Case archived successfully");
+      } else {
+        toast.error(result.error);
+      }
+      handleCloseArchiveModal();
+    }
+  };
+
+  const handleDelete = async () => {
+    if (selectedCase) {
+      const result = await deleteCase(selectedCase.id);
+      if (result.success) {
+        toast.success("Case deleted successfully");
+      } else {
+        toast.error(result.error);
+      }
+      handleCloseDeleteModal();
+    }
+  };
+
   const columns: ColumnDef<CaseData>[] = [
-    {
-      id: "select",
-      header: ({ table }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={value => table.toggleAllPageRowsSelected(!!value)}
-            aria-label="Select all"
-          />
-        </div>
-      ),
-      cell: ({ row }) => (
-        <div className="flex items-center justify-center">
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={value => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        </div>
-      ),
-      enableSorting: false,
-      enableHiding: false,
-    },
     {
       accessorKey: "title",
       header: "Case Title",
@@ -221,9 +243,18 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
             <DropdownMenuItem onClick={() => handleOpenModal(row.original)}>
               Change Status
             </DropdownMenuItem>
-            <DropdownMenuItem>Archive</DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleOpenArchiveModal(row.original)}
+            >
+              Archive
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => handleOpenDeleteModal(row.original)}
+            >
+              Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -367,6 +398,20 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
             onClose={handleCloseModal}
           />
         )}
+        <ConfirmDialog
+          isOpen={isArchiveModalOpen}
+          onClose={handleCloseArchiveModal}
+          onConfirm={handleArchive}
+          title="Archive Case"
+          description="Are you sure you want to archive this case?"
+        />
+        <ConfirmDialog
+          isOpen={isDeleteModalOpen}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleDelete}
+          title="Delete Case"
+          description="Are you sure you want to delete this case? This action cannot be undone."
+        />
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
             {table.getFilteredSelectedRowModel().rows.length} of{" "}

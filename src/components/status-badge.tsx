@@ -1,4 +1,4 @@
-import { Check, Clock, Loader, LucideIcon } from "lucide-react";
+import { Archive, Check, Clock, Loader, LucideIcon } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { CaseStatus } from "@/generated/prisma";
 
@@ -44,6 +44,11 @@ const StatusBadge = ({ status }: { status: CaseStatus }) => {
       icon: Check,
       color: "text-green-600",
       bg: "bg-green-100",
+    },
+    ARCHIVED: {
+      icon: Archive,
+      color: "text-gray-600",
+      bg: "bg-gray-100",
     },
   };
 
