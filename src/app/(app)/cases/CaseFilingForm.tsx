@@ -45,6 +45,7 @@ const caseSchema = z.object({
     "REMEDIES",
     "PRELIMINARY_CONFERENCE",
     "DECISION",
+    "ARCHIVED",
   ]),
   // document: z.string().optional(),
 });
