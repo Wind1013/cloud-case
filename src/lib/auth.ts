@@ -1,4 +1,4 @@
-import { betterAuth } from "better-auth";
+import { betterAuth, type User } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import prisma from "@/lib/prisma";
 import { sendEmail } from "./email";
@@ -48,6 +48,26 @@ export const auth = betterAuth({
       phone: {
         type: "string",
         input: false,
+      },
+    },
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({
+        user,
+        newEmail,
+        url,
+        token,
+      }: {
+        user: User;
+        newEmail: string;
+        url: string;
+        token: string;
+      }) => {
+        await sendEmail({
+          to: user.email, // verification email must be sent to the current user email to approve the change
+          subject: "Approve email change",
+          text: `Click the link to approve the change: ${url}`,
+        });
       },
     },
   },
