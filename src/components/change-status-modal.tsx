@@ -20,6 +20,7 @@ import { updateCaseStatus } from "@/actions/cases";
 import { toast } from "sonner";
 import { CaseData } from "./case-data-table";
 import { IconClock, IconLoader, IconCheck } from "@tabler/icons-react";
+import { Archive } from "lucide-react";
 
 interface ChangeStatusModalProps {
   caseData: CaseData;
@@ -68,6 +69,10 @@ const statusConfig = {
   DECISION: {
     icon: IconCheck,
     color: "text-green-600",
+  },
+  ARCHIVED: {
+    icon: Archive,
+    color: "text-gray-600",
   },
 };
 
