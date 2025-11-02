@@ -43,7 +43,7 @@ export default function SchedulerViewFilteration({
   clients: User[];
 }) {
   const { setOpen } = useModal();
-  const [activeView, setActiveView] = useState<string>("day");
+  const [activeView, setActiveView] = useState<string>("week");
   const [clientSide, setClientSide] = useState(false);
 
   console.log("activeView", activeView);
@@ -75,40 +75,6 @@ export default function SchedulerViewFilteration({
   }, [clientSide]);
 
   function handleAddEvent(selectedDay?: number) {
-    // Create the modal content with proper data
-    const startDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      0,
-      0,
-      0,
-      0
-    );
-
-    const endDate = new Date(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      selectedDay ?? new Date().getDate(),
-      23,
-      59,
-      59,
-      999
-    );
-
-    // Create a wrapper component to handle data passing
-    const ModalWrapper = () => {
-      const title =
-        CustomComponents?.CustomEventModal?.CustomAddEventModal?.title ||
-        "Add Event";
-
-      return (
-        <div>
-          <h2 className="text-xl font-semibold mb-4">{title}</h2>
-        </div>
-      );
-    };
-
     // Open the modal with the content
     setOpen(
       <CustomModal title="Add Event">
@@ -136,26 +102,9 @@ export default function SchedulerViewFilteration({
     <div className="flex w-full flex-col">
       <div className="flex w-full">
         <div className="dayly-weekly-monthly-selection relative w-full">
-          <Tabs
-            value={activeView}
-            onValueChange={setActiveView}
-            className={cn("w-full", classNames?.tabs)}
-          >
+          <Tabs className={cn("w-full", classNames?.tabs)} defaultValue="week">
             <div className="flex justify-between items-center mb-4">
               <TabsList className="grid grid-cols-2">
-                {/* {viewsSelector?.includes("day") && (
-                  <TabsTrigger value="day">
-                    {CustomComponents?.customTabs?.CustomDayTab ? (
-                      CustomComponents.customTabs.CustomDayTab
-                    ) : (
-                      <div className="flex items-center space-x-2">
-                        <CalendarDaysIcon size={15} />
-                        <span>Day</span>
-                      </div>
-                    )}
-                  </TabsTrigger>
-                )} */}
-
                 {viewsSelector?.includes("week") && (
                   <TabsTrigger value="week">
                     {CustomComponents?.customTabs?.CustomWeekTab ? (
@@ -199,30 +148,6 @@ export default function SchedulerViewFilteration({
                 </Button>
               )}
             </div>
-
-            {/* {viewsSelector?.includes("day") && (
-              <TabsContent value="day">
-                <AnimatePresence mode="wait">
-                  <motion.div {...animationConfig}>
-                    <DailyView
-                      clients={clients}
-                      stopDayEventSummary={stopDayEventSummary}
-                      classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
-                      CustomEventModal={CustomComponents?.CustomEventModal}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </TabsContent>
-            )} */}
 
             {viewsSelector?.includes("week") && (
               <TabsContent value="week">
