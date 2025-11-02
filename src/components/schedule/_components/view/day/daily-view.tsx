@@ -280,6 +280,8 @@ export default function DailyView({
       title: "",
       id: "",
       variant: "primary",
+      meetingUrl: "",
+      type: "FACE_TO_FACE",
     });
   }
 

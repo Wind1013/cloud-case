@@ -33,9 +33,15 @@ export async function sendAppointmentConfirmationEmail(
     return;
   }
 
-  let text = `Your appointment for ${appointment.title} has been confirmed.\n\nDetails:\nStart Time: ${appointment.startDate}\nEnd Time: ${appointment.endDate}`;
+  let text = `Appointment Confirmed
+
+  Title: ${appointment.title}
+  Start Time: ${appointment.startDate}
+  End Time: ${appointment.endDate}`;
+
   if (appointment.type === "ONLINE" && appointment.meetingUrl) {
-    text += `\nMeeting URL: ${appointment.meetingUrl}`;
+    text += `
+  Meeting Link: ${appointment.meetingUrl}`;
   }
 
   await sendEmail({

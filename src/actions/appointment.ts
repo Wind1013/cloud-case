@@ -25,12 +25,16 @@ export async function getAppointments() {
   }
 }
 
-export type CreateAppointment = Omit<Appointment, "id" | "createdAt" | "updatedAt" | "createdById">;
+export type CreateAppointment = Omit<
+  Appointment,
+  "id" | "createdAt" | "updatedAt" | "createdById"
+>;
 
 export async function createAppointment(formData: CreateAppointment) {
   const session = await getAuthSession();
   try {
-    const { title, description, startDate, endDate, variant, clientId, type } = formData;
+    const { title, description, startDate, endDate, variant, clientId, type } =
+      formData;
 
     let meetingUrl: string | undefined;
     if (type === "ONLINE") {
@@ -61,7 +65,10 @@ export async function createAppointment(formData: CreateAppointment) {
   }
 }
 
-export async function updateAppointment(id: string, formData: Partial<CreateAppointment>) {
+export async function updateAppointment(
+  id: string,
+  formData: Partial<CreateAppointment>
+) {
   await getAuthSession();
   try {
     const { title, startDate, type } = formData;

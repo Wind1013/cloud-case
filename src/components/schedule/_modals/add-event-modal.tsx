@@ -50,7 +50,7 @@ export default function AddEventModal({
     getEventColor(data?.variant || "primary")
   );
 
-  const typedData = data.default as AppointmentEvent;
+  const typedData = (data.default || {}) as AppointmentEvent;
 
   const {
     register,
@@ -77,10 +77,9 @@ export default function AddEventModal({
   const selectedClientId = watch("clientId");
 
   const colorOptions = [
-    { key: "blue", name: "Blue" },
-    { key: "red", name: "Red" },
-    { key: "green", name: "Green" },
-    { key: "yellow", name: "Yellow" },
+    { key: "blue", name: "ADMINISTRATIVE" },
+    { key: "red", name: "CRIMINAL" },
+    { key: "green", name: "CIVIL" },
   ];
 
   function getEventColor(variant: Variant) {
@@ -91,8 +90,6 @@ export default function AddEventModal({
         return "red";
       case "success":
         return "green";
-      case "warning":
-        return "yellow";
       default:
         return "blue";
     }
@@ -106,8 +103,6 @@ export default function AddEventModal({
         return "danger";
       case "green":
         return "success";
-      case "yellow":
-        return "warning";
       default:
         return "default";
     }
@@ -277,15 +272,7 @@ export default function AddEventModal({
                       setValue("variant", getEventStatus(color.key));
                     }}
                   >
-                    <div className="flex items-center">
-                      <div
-                        style={{
-                          backgroundColor: `var(--${color.key})`,
-                        }}
-                        className={`w-4 h-4 rounded-full mr-2`}
-                      />
-                      {color.name}
-                    </div>
+                    {color.name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
