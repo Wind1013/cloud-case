@@ -2,14 +2,14 @@
 
 import SchedulerWrapper from "@/components/schedule/_components/wrapper/schedular-wrapper";
 import { SchedulerProvider } from "@/providers/schedular-provider";
-import { Event } from "@/types";
+import { AppointmentEvent } from "@/types";
 import { User } from "@/generated/prisma";
 
 const AppointmentClient = ({
   appointments,
   clients,
 }: {
-  appointments: Event[];
+  appointments: AppointmentEvent[];
   clients: User[];
 }) => {
   return (

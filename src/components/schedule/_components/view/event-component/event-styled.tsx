@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
-import { Event, CustomEventModal } from "@/types";
+import { AppointmentEvent, CustomEventModal } from "@/types";
 import { TrashIcon, CalendarIcon, ClockIcon } from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
@@ -71,9 +71,9 @@ const variantColors = {
   },
 };
 
-interface EventStyledProps extends Event {
+interface EventStyledProps extends AppointmentEvent {
   minmized?: boolean;
-  CustomEventComponent?: React.FC<Event>;
+  CustomEventComponent?: React.FC<AppointmentEvent>;
 }
 
 export default function EventStyled({
@@ -95,7 +95,7 @@ export default function EventStyled({
   const shouldShowDeleteButton = !event?.minmized;
 
   // Handler function
-  function handleEditEvent(event: Event) {
+  function handleEditEvent(event: AppointmentEvent) {
     // Open the modal with the content
     setOpen(
       <CustomModal title="Edit Event">
@@ -181,6 +181,8 @@ export default function EventStyled({
               description: event?.description,
               variant: event?.variant,
               clientId: event.clientId,
+              type: event.type,
+              meetingUrl: event.meetingUrl,
             });
           }}
         >
@@ -198,6 +200,8 @@ export default function EventStyled({
               description: event?.description,
               variant: event?.variant,
               clientId: event?.clientId,
+              type: event.type,
+              meetingUrl: event.meetingUrl,
             });
           }}
           className={cn(

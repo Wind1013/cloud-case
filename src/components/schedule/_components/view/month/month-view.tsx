@@ -14,7 +14,7 @@ import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import ShowMoreEventsModal from "@/components/schedule/_modals/show-more-events-modal";
 import EventStyled from "../event-component/event-styled";
-import { Event, CustomEventModal } from "@/types";
+import { AppointmentEvent, CustomEventModal } from "@/types";
 import CustomModal from "@/components/ui/custom-modal";
 
 import { easeInOut } from "framer-motion";
@@ -44,7 +44,7 @@ export default function MonthView({
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
-  CustomEventComponent?: React.FC<Event>;
+  CustomEventComponent?: React.FC<AppointmentEvent>;
   CustomEventModal?: CustomEventModal;
   classNames?: { prev?: string; next?: string; addEvent?: string };
   clients: User[];
@@ -122,7 +122,7 @@ export default function MonthView({
     );
   }
 
-  function handleShowMoreEvents(dayEvents: Event[]) {
+  function handleShowMoreEvents(dayEvents: AppointmentEvent[]) {
     setOpen(
       <CustomModal title={dayEvents && dayEvents[0]?.startDate.toDateString()}>
         <ShowMoreEventsModal />

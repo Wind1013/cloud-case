@@ -24,7 +24,12 @@ import { useModal } from "@/providers/modal-context";
 import SelectDate from "@/components/schedule/_components/add-event-components/select-date";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { EventFormData, eventSchema, Variant, Event } from "@/types/index";
+import {
+  EventFormData,
+  eventSchema,
+  Variant,
+  AppointmentEvent,
+} from "@/types/index";
 import { useScheduler } from "@/providers/schedular-provider";
 import { createAppointment, updateAppointment } from "@/actions/appointment";
 import { toast } from "sonner";
@@ -45,7 +50,7 @@ export default function AddEventModal({
     getEventColor(data?.variant || "primary")
   );
 
-  const typedData = data as Event;
+  const typedData = data as AppointmentEvent;
 
   const { handlers } = useScheduler();
 
@@ -130,7 +135,7 @@ export default function AddEventModal({
       title: formData.title,
       description: formData.description ?? null,
       startDate: formData.startDate,
-      endDate:formData.endDate,
+      endDate: formData.endDate,
       variant: formData.variant.toUpperCase() as AppointmentVariant,
       clientId: formData.clientId,
       type: formData.type,
@@ -209,7 +214,9 @@ export default function AddEventModal({
           <div className="grid gap-2">
             <Label htmlFor="type">Type</Label>
             <Select
-              onValueChange={value => setValue("type", value as "ONLINE" | "FACE_TO_FACE")}
+              onValueChange={value =>
+                setValue("type", value as "ONLINE" | "FACE_TO_FACE")
+              }
               defaultValue={watch("type")}
             >
               <SelectTrigger>

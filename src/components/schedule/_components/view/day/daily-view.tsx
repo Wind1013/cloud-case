@@ -9,7 +9,7 @@ import { useScheduler } from "@/providers/schedular-provider";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import EventStyled from "../event-component/event-styled";
-import { CustomEventModal, Event } from "@/types";
+import { CustomEventModal, AppointmentEvent } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
@@ -55,7 +55,7 @@ const pageTransitionVariants = {
 };
 
 // Precise time-based event grouping function
-const groupEventsByTimePeriod = (events: Event[] | undefined) => {
+const groupEventsByTimePeriod = (events: AppointmentEvent[] | undefined) => {
   if (!events || events.length === 0) return [];
 
   // Sort events by start time
@@ -64,7 +64,10 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
   );
 
   // Precise time overlap checking function
-  const eventsOverlap = (event1: Event, event2: Event) => {
+  const eventsOverlap = (
+    event1: AppointmentEvent,
+    event2: AppointmentEvent
+  ) => {
     const start1 = new Date(event1.startDate).getTime();
     const end1 = new Date(event1.endDate).getTime();
     const start2 = new Date(event2.startDate).getTime();
@@ -75,7 +78,7 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
   };
 
   // Use a graph-based approach to find connected components (overlapping event groups)
-  const buildOverlapGraph = (events: Event[]) => {
+  const buildOverlapGraph = (events: AppointmentEvent[]) => {
     // Create adjacency list
     const graph: Record<string, string[]> = {};
 
@@ -100,10 +103,10 @@ const groupEventsByTimePeriod = (events: Event[] | undefined) => {
   // Find connected components using DFS
   const findConnectedComponents = (
     graph: Record<string, string[]>,
-    events: Event[]
+    events: AppointmentEvent[]
   ) => {
     const visited: Record<string, boolean> = {};
-    const components: Event[][] = [];
+    const components: AppointmentEvent[][] = [];
 
     // DFS function to traverse the graph
     const dfs = (nodeId: string, component: string[]) => {
@@ -159,7 +162,7 @@ export default function DailyView({
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
-  CustomEventComponent?: React.FC<Event>;
+  CustomEventComponent?: React.FC<AppointmentEvent>;
   CustomEventModal?: CustomEventModal;
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
@@ -210,7 +213,7 @@ export default function DailyView({
   // Calculate time groups once for all events
   const timeGroups = groupEventsByTimePeriod(dayEvents);
 
-  function handleAddEvent(event?: Event) {
+  function handleAddEvent(event?: AppointmentEvent) {
     // Create the modal content with the provided event data or defaults
     const startDate = event?.startDate || new Date();
     const endDate = event?.endDate || new Date();

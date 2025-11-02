@@ -15,7 +15,7 @@ import {
   Maximize,
 } from "lucide-react";
 import clsx from "clsx";
-import { Event, CustomEventModal } from "@/types";
+import { AppointmentEvent, CustomEventModal } from "@/types";
 import CustomModal from "@/components/ui/custom-modal";
 
 const hours = Array.from({ length: 24 }, (_, i) => {
@@ -65,7 +65,7 @@ export default function WeeklyView({
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
-  CustomEventComponent?: React.FC<Event>;
+  CustomEventComponent?: React.FC<AppointmentEvent>;
   CustomEventModal?: CustomEventModal;
   classNames?: { prev?: string; next?: string; addEvent?: string };
   clients: User[];
@@ -117,7 +117,7 @@ export default function WeeklyView({
     []
   );
 
-  function handleAddEvent(event?: Event) {
+  function handleAddEvent(event?: AppointmentEvent) {
     // Create the modal content with the provided event data or defaults
     const startDate = event?.startDate || new Date();
     const endDate = event?.endDate || new Date();
@@ -201,7 +201,7 @@ export default function WeeklyView({
   }
 
   // Group events by time period to prevent splitting spaces within same time blocks
-  const groupEventsByTimePeriod = (events: Event[] | undefined) => {
+  const groupEventsByTimePeriod = (events: AppointmentEvent[] | undefined) => {
     if (!events || events.length === 0) return [];
 
     // Sort events by start time
@@ -211,7 +211,10 @@ export default function WeeklyView({
     );
 
     // Precise time overlap checking function
-    const eventsOverlap = (event1: Event, event2: Event) => {
+    const eventsOverlap = (
+      event1: AppointmentEvent,
+      event2: AppointmentEvent
+    ) => {
       const start1 = new Date(event1.startDate).getTime();
       const end1 = new Date(event1.endDate).getTime();
       const start2 = new Date(event2.startDate).getTime();
@@ -242,13 +245,13 @@ export default function WeeklyView({
 
     // Use DFS to find connected components (groups of overlapping events)
     const visited = new Set<string>();
-    const groups: Event[][] = [];
+    const groups: AppointmentEvent[][] = [];
 
     for (const event of sortedEvents) {
       if (!visited.has(event.id)) {
         // Start a new component/group
-        const group: Event[] = [];
-        const stack: Event[] = [event];
+        const group: AppointmentEvent[] = [];
+        const stack: AppointmentEvent[] = [event];
         visited.add(event.id);
 
         // DFS traversal

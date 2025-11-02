@@ -13,7 +13,7 @@ import { z } from "zod";
 
 import {
   Action,
-  Event,
+  AppointmentEvent,
   Getters,
   Handlers,
   SchedulerContextType,
@@ -23,7 +23,7 @@ import ModalProvider from "./modal-context";
 // Define event and state types
 
 interface SchedulerState {
-  events: Event[];
+  events: AppointmentEvent[];
 }
 
 // Define the variant options
@@ -52,12 +52,12 @@ const schedulerReducer = (
     case "REMOVE_EVENT":
       return {
         ...state,
-        events: state.events.filter((event) => event.id !== action.payload.id),
+        events: state.events.filter(event => event.id !== action.payload.id),
       };
     case "UPDATE_EVENT":
       return {
         ...state,
-        events: state.events.map((event) =>
+        events: state.events.map(event =>
           event.id === action.payload.id ? action.payload : event
         ),
       };
@@ -83,12 +83,12 @@ export const SchedulerProvider = ({
   initialState,
   weekStartsOn = "sunday",
 }: {
-  onAddEvent?: (event: Event) => void;
-  onUpdateEvent?: (event: Event) => void;
+  onAddEvent?: (event: AppointmentEvent) => void;
+  onUpdateEvent?: (event: AppointmentEvent) => void;
   onDeleteEvent?: (id: string) => void;
   weekStartsOn?: startOfWeek;
   children: ReactNode;
-  initialState?: Event[];
+  initialState?: AppointmentEvent[];
 }) => {
   const [state, dispatch] = useReducer(
     schedulerReducer,
@@ -155,7 +155,7 @@ export const SchedulerProvider = ({
 
   // Helper function to filter events for a specific day
   const getEventsForDay = (day: number, currentDate: Date) => {
-    return state?.events.filter((event) => {
+    return state?.events.filter(event => {
       const eventStart = new Date(event.startDate);
       const eventEnd = new Date(event.endDate);
 
@@ -195,27 +195,39 @@ export const SchedulerProvider = ({
 
   // handlers
   function handleEventStyling(
-    event: Event, 
-    dayEvents: Event[],
-    periodOptions?: { 
-      eventsInSamePeriod?: number; 
-      periodIndex?: number; 
+    event: AppointmentEvent,
+    dayEvents: AppointmentEvent[],
+    periodOptions?: {
+      eventsInSamePeriod?: number;
+      periodIndex?: number;
       adjustForPeriod?: boolean;
     }
   ) {
     // More precise time-based overlap detection
-    const eventsOnHour = dayEvents.filter((e) => {
+    const eventsOnHour = dayEvents.filter(e => {
       // Don't compare with self
       if (e.id === event.id) return false;
-      
+
       // Convert dates to timestamps for precise comparison
-      const eStart = e.startDate instanceof Date ? e.startDate.getTime() : new Date(e.startDate).getTime();
-      const eEnd = e.endDate instanceof Date ? e.endDate.getTime() : new Date(e.endDate).getTime();
-      const eventStart = event.startDate instanceof Date ? event.startDate.getTime() : new Date(event.startDate).getTime();
-      const eventEnd = event.endDate instanceof Date ? event.endDate.getTime() : new Date(event.endDate).getTime();
-      
+      const eStart =
+        e.startDate instanceof Date
+          ? e.startDate.getTime()
+          : new Date(e.startDate).getTime();
+      const eEnd =
+        e.endDate instanceof Date
+          ? e.endDate.getTime()
+          : new Date(e.endDate).getTime();
+      const eventStart =
+        event.startDate instanceof Date
+          ? event.startDate.getTime()
+          : new Date(event.startDate).getTime();
+      const eventEnd =
+        event.endDate instanceof Date
+          ? event.endDate.getTime()
+          : new Date(event.endDate).getTime();
+
       // True overlap check - one event starts before the other ends
-      return (eStart < eventEnd && eEnd > eventStart);
+      return eStart < eventEnd && eEnd > eventStart;
     });
 
     // Add the current event to the list of overlapping events
@@ -223,18 +235,29 @@ export const SchedulerProvider = ({
 
     // Sort overlapping events by start time to ensure consistent ordering
     allEventsInRange.sort((a, b) => {
-      const aStart = a.startDate instanceof Date ? a.startDate.getTime() : new Date(a.startDate).getTime();
-      const bStart = b.startDate instanceof Date ? b.startDate.getTime() : new Date(b.startDate).getTime();
+      const aStart =
+        a.startDate instanceof Date
+          ? a.startDate.getTime()
+          : new Date(a.startDate).getTime();
+      const bStart =
+        b.startDate instanceof Date
+          ? b.startDate.getTime()
+          : new Date(b.startDate).getTime();
       return aStart - bStart;
     });
 
     // Use custom period grouping if provided, otherwise use the precise overlapping events
-    const useCustomPeriod = periodOptions?.adjustForPeriod && 
-                           periodOptions.eventsInSamePeriod !== undefined && 
-                           periodOptions.periodIndex !== undefined;
-                           
-    let numEventsOnHour = useCustomPeriod ? periodOptions!.eventsInSamePeriod! : allEventsInRange.length;
-    let indexOnHour = useCustomPeriod ? periodOptions!.periodIndex! : allEventsInRange.indexOf(event);
+    const useCustomPeriod =
+      periodOptions?.adjustForPeriod &&
+      periodOptions.eventsInSamePeriod !== undefined &&
+      periodOptions.periodIndex !== undefined;
+
+    let numEventsOnHour = useCustomPeriod
+      ? periodOptions!.eventsInSamePeriod!
+      : allEventsInRange.length;
+    let indexOnHour = useCustomPeriod
+      ? periodOptions!.periodIndex!
+      : allEventsInRange.indexOf(event);
 
     // If there are no overlapping events or using custom grouping failed, give full width
     if (numEventsOnHour === 0 || indexOnHour === -1) {
@@ -281,10 +304,10 @@ export const SchedulerProvider = ({
     // Improved width and position calculation
     // Use a smaller width if we have multiple overlapping events
     const widthPercentage = Math.min(95 / Math.max(numEventsOnHour, 1), 95);
-    
+
     // Calculate left position with a small gap between events
     const leftPosition = indexOnHour * (widthPercentage + 1);
-    
+
     // Ensure left position doesn't go beyond container
     const safeLeftPosition = Math.min(leftPosition, 100 - widthPercentage);
 
@@ -307,14 +330,14 @@ export const SchedulerProvider = ({
     };
   }
 
-  function handleAddEvent(event: Event) {
+  function handleAddEvent(event: AppointmentEvent) {
     dispatch({ type: "ADD_EVENT", payload: event });
     if (onAddEvent) {
       onAddEvent(event);
     }
   }
 
-  function handleUpdateEvent(event: Event, id: string) {
+  function handleUpdateEvent(event: AppointmentEvent, id: string) {
     dispatch({ type: "UPDATE_EVENT", payload: { ...event, id } });
     if (onUpdateEvent) {
       onUpdateEvent(event);

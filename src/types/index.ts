@@ -8,7 +8,7 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 // SchedulerTypes.ts
 
 // Define event type
-export interface Event {
+export type AppointmentEvent = {
   id: string;
   title: string;
   description?: string;
@@ -18,25 +18,25 @@ export interface Event {
   clientId?: string;
   type?: "ONLINE" | "FACE_TO_FACE";
   meetingUrl?: string;
-}
+};
 
 // Define the state interface for the scheduler
 export interface SchedulerState {
-  events: Event[];
+  events: AppointmentEvent[];
 }
 
 // Define actions for reducer
 export type Action =
-  | { type: "ADD_EVENT"; payload: Event }
+  | { type: "ADD_EVENT"; payload: AppointmentEvent }
   | { type: "REMOVE_EVENT"; payload: { id: string } }
-  | { type: "UPDATE_EVENT"; payload: Event }
-  | { type: "SET_EVENTS"; payload: Event[] };
+  | { type: "UPDATE_EVENT"; payload: AppointmentEvent }
+  | { type: "SET_EVENTS"; payload: AppointmentEvent[] };
 
 // Define handlers interface
 export interface Handlers {
   handleEventStyling: (
-    event: Event,
-    dayEvents: Event[],
+    event: AppointmentEvent,
+    dayEvents: AppointmentEvent[],
     periodOptions?: {
       eventsInSamePeriod?: number;
       periodIndex?: number;
@@ -50,8 +50,8 @@ export interface Handlers {
     top: string;
     zIndex: number;
   };
-  handleAddEvent: (event: Event) => void;
-  handleUpdateEvent: (event: Event, id: string) => void;
+  handleAddEvent: (event: AppointmentEvent) => void;
+  handleUpdateEvent: (event: AppointmentEvent, id: string) => void;
   handleDeleteEvent: (id: string) => void;
 }
 
@@ -60,8 +60,8 @@ export interface Getters {
   getDaysInMonth: (
     month: number,
     year: number
-  ) => { day: number; events: Event[] }[];
-  getEventsForDay: (day: number, currentDate: Date) => Event[];
+  ) => { day: number; events: AppointmentEvent[] }[];
+  getEventsForDay: (day: number, currentDate: Date) => AppointmentEvent[];
   getDaysInWeek: (week: number, year: number) => Date[];
   getWeekNumber: (date: Date) => number;
   getDayName: (day: number) => string;
@@ -97,6 +97,7 @@ export const eventSchema = z.object({
   color: z.string().nonempty("Color selection is required"),
   clientId: z.string().nonempty("Client is required"),
   type: z.enum(["ONLINE", "FACE_TO_FACE"]).default("FACE_TO_FACE"),
+  meetingUrl: z.string().optional(),
 });
 
 export type EventFormData = z.infer<typeof eventSchema>;
@@ -128,7 +129,7 @@ export interface CustomComponents {
     CustomWeekTab?: React.ReactNode;
     CustomMonthTab?: React.ReactNode;
   };
-  CustomEventComponent?: React.FC<Event>; // Using custom event type
+  CustomEventComponent?: React.FC<AppointmentEvent>; // Using custom event type
   CustomEventModal?: CustomEventModal;
 }
 
