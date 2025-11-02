@@ -167,3 +167,22 @@ export async function updateAccount(
     };
   }
 }
+
+export async function getNewClientsCount() {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const count = await prisma.user.count({
+      where: {
+        role: UserRole.CLIENT,
+        createdAt: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+    return { success: true, data: count };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}

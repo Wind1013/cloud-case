@@ -100,3 +100,17 @@ export async function deleteCase(id: string) {
     return { success: false, error: (error as Error).message };
   }
 }
+
+export async function getPendingCasesCount() {
+  await getAuthSession();
+  try {
+    const count = await prisma.case.count({
+      where: {
+        status: "PENDING",
+      },
+    });
+    return { success: true, data: count };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}

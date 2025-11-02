@@ -25,6 +25,28 @@ export async function getAppointments() {
   }
 }
 
+export async function getTodaysAppointmentsCount() {
+  await getAuthSession();
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const count = await prisma.appointment.count({
+      where: {
+        startDate: {
+          gte: today,
+          lt: tomorrow,
+        },
+      },
+    });
+    return { success: true, data: count };
+  } catch (error) {
+    return { success: false, error: (error as Error).message };
+  }
+}
+
 export type CreateAppointment = Omit<
   Appointment,
   "id" | "createdAt" | "updatedAt" | "createdById"
