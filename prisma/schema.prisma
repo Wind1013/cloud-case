@@ -169,61 +169,46 @@ enum AppointmentVariant {
   DANGER
 }
 
+enum AppointmentType {
+  ONLINE
+  FACE_TO_FACE
+}
+
 model Appointment {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  startDate   DateTime
-  endDate     DateTime
-  variant     AppointmentVariant @default(PRIMARY)
+  id           String          @id @default(cuid())
+  title        String
+  description  String?
+  startDate    DateTime
+  endDate      DateTime
+  variant      AppointmentVariant @default(PRIMARY)
+  type         AppointmentType @default(FACE_TO_FACE)
+  meetingUrl   String?
   
-  createdById String
-  createdBy   User     @relation("CreatedAppointments", fields: [createdById], references: [id])
+  createdById  String
+  createdBy    User            @relation("CreatedAppointments", fields: [createdById], references: [id])
+  clientId     String?
+  client       User?           @relation("ClientAppointments", fields: [clientId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
-  clientId    String?
-  client      User?    @relation("ClientAppointments", fields: [clientId], references: [id])
+  @@map("appointments")
+}
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+enum TemplateState {
+  ACTIVE
+  ARCHIVED
+}
 
-  
+model Template {
+  id        String      @id @default(cuid())
+  name      String
+  content   String      @db.Text // HTML content with {{placeholders}}
+  variables Json // Array of variable names extracted from content
+  status    TemplateState @default(ACTIVE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
-    @@map("appointments")
-
-  }
-
-  
-
-  enum TemplateState {
-
-    ACTIVE
-
-    ARCHIVED
-
-  }
-
-  
-
-  model Template {
-
-    id        String   @id @default(cuid())
-
-    name      String
-
-    content   String   @db.Text  // HTML content with {{placeholders}}
-
-    variables Json     // Array of variable names extracted from content
-
-    status    TemplateState @default(ACTIVE)
-
-    createdAt DateTime @default(now())
-
-    updatedAt DateTime @updatedAt
-
-  
-
-    @@map("templates")
-
-  }
+  @@map("templates")
+}
 
   

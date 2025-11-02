@@ -66,6 +66,7 @@ export default function AddEventModal({
       variant: (data?.default?.variant?.toLowerCase() as Variant) || "primary",
       color: data?.default?.color || "blue",
       clientId: data?.default?.clientId || "",
+      type: data?.default?.type || "FACE_TO_FACE",
     },
   });
 
@@ -129,9 +130,10 @@ export default function AddEventModal({
       title: formData.title,
       description: formData.description ?? null,
       startDate: formData.startDate,
-      endDate: formData.endDate,
+      endDate:formData.endDate,
       variant: formData.variant.toUpperCase() as AppointmentVariant,
       clientId: formData.clientId,
+      type: formData.type,
     };
 
     try {
@@ -200,6 +202,27 @@ export default function AddEventModal({
             {errors.clientId && (
               <p className="text-sm text-red-500">
                 {errors.clientId.message as string}
+              </p>
+            )}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="type">Type</Label>
+            <Select
+              onValueChange={value => setValue("type", value as "ONLINE" | "FACE_TO_FACE")}
+              defaultValue={watch("type")}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="FACE_TO_FACE">Face to Face</SelectItem>
+                <SelectItem value="ONLINE">Online</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.type && (
+              <p className="text-sm text-red-500">
+                {errors.type.message as string}
               </p>
             )}
           </div>
