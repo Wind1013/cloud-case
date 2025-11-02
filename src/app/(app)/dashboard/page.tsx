@@ -6,17 +6,30 @@ import { getPendingCasesCount } from "@/actions/cases";
 import { getNewClientsGrowthRate } from "@/data/metrics";
 
 export default async function Page() {
-  const [appointmentsResponse, clientsResponse, casesResponse, growthRateResponse] = await Promise.all([
+  const [
+    appointmentsResponse,
+    clientsResponse,
+    casesResponse,
+    growthRateResponse,
+  ] = await Promise.all([
     getTodaysAppointmentsCount(),
     getNewClientsCount(),
     getPendingCasesCount(),
     getNewClientsGrowthRate(),
   ]);
 
-  const todaysAppointments = appointmentsResponse.success ? appointmentsResponse.data : 0;
-  const newClients = clientsResponse.success ? clientsResponse.data : 0;
-  const pendingCases = casesResponse.success ? casesResponse.data : 0;
-  const growthRate = growthRateResponse.success ? growthRateResponse.data : 0;
+  const todaysAppointments = appointmentsResponse.success
+    ? (appointmentsResponse.data as number)
+    : 0;
+  const newClients = clientsResponse.success
+    ? (clientsResponse.data as number)
+    : 0;
+  const pendingCases = casesResponse.success
+    ? (casesResponse.data as number)
+    : 0;
+  const growthRate = growthRateResponse.success
+    ? (growthRateResponse.data as number)
+    : 0;
 
   return (
     <div className="flex flex-1 flex-col">

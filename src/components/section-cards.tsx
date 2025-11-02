@@ -77,7 +77,7 @@ export function SectionCards({
       <Link href="/cases">
         <Card className="@container/card">
           <CardHeader>
-            <CardDescription>Pending Cases</CardDescription>
+            <CardDescription>Pretrial Cases</CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {pendingCases}
             </CardTitle>
@@ -92,7 +92,9 @@ export function SectionCards({
             <div className="line-clamp-1 flex gap-2 font-medium">
               Strong user retention <IconTrendingUp className="size-4" />
             </div>
-            <div className="text-muted-foreground">Engagement exceed targets</div>
+            <div className="text-muted-foreground">
+              Engagement exceed targets
+            </div>
           </CardFooter>
         </Card>
       </Link>
@@ -105,16 +107,23 @@ export function SectionCards({
           <CardAction>
             <Badge variant="outline">
               {growthRate >= 0 ? <IconTrendingUp /> : <IconTrendingDown />}
-              {growthRate >= 0 ? "+" : ""}{growthRate}%
+              {growthRate >= 0 ? "+" : ""}
+              {growthRate}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
           <div className="line-clamp-1 flex gap-2 font-medium">
             {growthRate >= 0 ? "Trending up" : "Trending down"} this period
-            {growthRate >= 0 ? <IconTrendingUp className="size-4" /> : <IconTrendingDown className="size-4" />}
+            {growthRate >= 0 ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
-          <div className="text-muted-foreground">Growth Rate based on new clients</div>
+          <div className="text-muted-foreground">
+            Growth Rate based on new clients
+          </div>
         </CardFooter>
       </Card>
     </div>

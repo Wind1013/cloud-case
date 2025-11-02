@@ -106,7 +106,7 @@ export async function getPendingCasesCount() {
   try {
     const count = await prisma.case.count({
       where: {
-        status: "PENDING",
+        status: "PRETRIAL",
       },
     });
     return { success: true, data: count };
