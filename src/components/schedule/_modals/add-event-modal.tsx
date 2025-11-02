@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -33,6 +33,7 @@ import {
 import { createAppointment, updateAppointment } from "@/actions/appointment";
 import { toast } from "sonner";
 import { AppointmentVariant, User } from "@/generated/prisma";
+import Link from "next/link";
 
 export default function AddEventModal({
   CustomAddEventModal,
@@ -232,6 +233,19 @@ export default function AddEventModal({
               </p>
             )}
           </div>
+
+          {watch("type") === "ONLINE" && typedData.meetingUrl && (
+            <div className="grid gap-2">
+              <Label>Meeting URL</Label>
+              <Link
+                href={typedData.meetingUrl}
+                target="_blank"
+                className="hover:undeline text-primary"
+              >
+                {typedData.meetingUrl}
+              </Link>
+            </div>
+          )}
 
           <SelectDate
             data={{
