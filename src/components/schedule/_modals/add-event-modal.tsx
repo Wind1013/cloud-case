@@ -30,7 +30,6 @@ import {
   Variant,
   AppointmentEvent,
 } from "@/types/index";
-import { useScheduler } from "@/providers/schedular-provider";
 import { createAppointment, updateAppointment } from "@/actions/appointment";
 import { toast } from "sonner";
 import { AppointmentVariant, User } from "@/generated/prisma";
@@ -50,9 +49,7 @@ export default function AddEventModal({
     getEventColor(data?.variant || "primary")
   );
 
-  const typedData = data as AppointmentEvent;
-
-  const { handlers } = useScheduler();
+  const typedData = data.default as AppointmentEvent;
 
   const {
     register,
@@ -64,14 +61,15 @@ export default function AddEventModal({
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
-      title: data?.default?.title || "",
-      description: data?.default?.description || "",
-      startDate: data?.default?.startDate || new Date(),
-      endDate: data?.default?.endDate || new Date(),
-      variant: (data?.default?.variant?.toLowerCase() as Variant) || "primary",
-      color: data?.default?.color || "blue",
-      clientId: data?.default?.clientId || "",
-      type: data?.default?.type || "FACE_TO_FACE",
+      title: typedData.title || "",
+      description: typedData.description || "",
+      startDate: typedData.startDate || new Date(),
+      endDate: typedData.endDate || new Date(),
+      variant: (typedData.variant?.toLowerCase() as Variant) || "primary",
+      color: typedData.variant || "blue",
+      clientId: typedData.clientId || "",
+      type: typedData.type,
+      meetingUrl: typedData.meetingUrl || "",
     },
   });
 
@@ -133,12 +131,13 @@ export default function AddEventModal({
     setIsLoading(true);
     const appointmentData = {
       title: formData.title,
-      description: formData.description ?? null,
+      description: formData.description || "",
       startDate: formData.startDate,
       endDate: formData.endDate,
       variant: formData.variant.toUpperCase() as AppointmentVariant,
       clientId: formData.clientId,
       type: formData.type,
+      meetingUrl: typedData.meetingUrl || "",
     };
 
     try {
@@ -236,8 +235,8 @@ export default function AddEventModal({
 
           <SelectDate
             data={{
-              startDate: data?.default?.startDate || new Date(),
-              endDate: data?.default?.endDate || new Date(),
+              startDate: typedData.startDate || new Date(),
+              endDate: typedData.endDate || new Date(),
             }}
             setValue={setValue}
           />

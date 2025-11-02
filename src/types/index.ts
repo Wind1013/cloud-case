@@ -16,7 +16,7 @@ export type AppointmentEvent = {
   endDate: Date;
   variant?: Variant;
   clientId?: string;
-  type?: "ONLINE" | "FACE_TO_FACE";
+  type: "ONLINE" | "FACE_TO_FACE";
   meetingUrl?: string;
 };
 
@@ -96,7 +96,7 @@ export const eventSchema = z.object({
   variant: z.enum(["primary", "danger", "success", "warning", "default"]),
   color: z.string().nonempty("Color selection is required"),
   clientId: z.string().nonempty("Client is required"),
-  type: z.enum(["ONLINE", "FACE_TO_FACE"]).default("FACE_TO_FACE"),
+  type: z.enum(["ONLINE", "FACE_TO_FACE"]),
   meetingUrl: z.string().optional(),
 });
 
