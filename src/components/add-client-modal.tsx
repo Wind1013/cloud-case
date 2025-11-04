@@ -26,7 +26,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useModal } from "@/providers/modal-context";
+import { useState } from "react";
 
 import {
   Select,
@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Gender } from "@/generated/prisma";
+import { useRouter } from "next/navigation";
 
 const addClientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -52,7 +53,8 @@ const addClientSchema = z.object({
 type AddClientValues = z.infer<typeof addClientSchema>;
 
 export function AddClientModal() {
-  const { setClose } = useModal();
+  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
   const form = useForm<AddClientValues>({
     resolver: zodResolver(addClientSchema),
     defaultValues: {
@@ -97,109 +99,203 @@ export function AddClientModal() {
     if (result.success) {
       toast.success(result.success);
       form.reset();
-      setClose("add-client");
+      setIsOpen(false);
+      router.refresh();
     } else if (result.error) {
       toast.error(result.error);
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button>Add Client</Button>
       </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add New Client</DialogTitle>
-          <DialogDescription>
-            Fill in the details below to add a new client.
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="space-y-3 pb-4">
+          <DialogTitle className="text-2xl font-semibold">
+            Add New Client
+          </DialogTitle>
+          <DialogDescription className="text-base">
+            Fill in the details below to add a new client to your system.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" {...form.register("name")} />
-            {form.formState.errors.name && (
-              <p className="text-red-500 text-sm">
-                {form.formState.errors.name.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="firstName">First Name</Label>
-            <Input id="firstName" {...form.register("firstName")} />
-          </div>
-          <div>
-            <Label htmlFor="lastName">Last Name</Label>
-            <Input id="lastName" {...form.register("lastName")} />
-          </div>
-          <div>
-            <Label htmlFor="middleName">Middle Name</Label>
-            <Input id="middleName" {...form.register("middleName")} />
-          </div>
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" {...form.register("email")} />
-            {form.formState.errors.email && (
-              <p className="text-red-500 text-sm">
-                {form.formState.errors.email.message}
-              </p>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" {...form.register("phone")} />
-          </div>
-          <div>
-            <Label>Gender</Label>
-            <Select
-              onValueChange={value => form.setValue("gender", value as Gender)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={Gender.MALE}>Male</SelectItem>
-                <SelectItem value={Gender.FEMALE}>Female</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label>Birthday</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !form.watch("birthday") && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {form.watch("birthday") ? (
-                    format(form.watch("birthday") as Date, "PPP")
-                  ) : (
-                    <span>Pick a date</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={form.watch("birthday")}
-                  onSelect={date => form.setValue("birthday", date)}
-                  initialFocus
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Information Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Basic Information
+            </h3>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-sm font-medium">
+                  Display Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="name"
+                  {...form.register("name")}
+                  className="h-10"
+                  placeholder="Enter display name"
                 />
-              </PopoverContent>
-            </Popover>
+                {form.formState.errors.name && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
+                    {form.formState.errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm font-medium">
+                    First Name
+                  </Label>
+                  <Input
+                    id="firstName"
+                    {...form.register("firstName")}
+                    className="h-10"
+                    placeholder="First name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="middleName" className="text-sm font-medium">
+                    Middle Name
+                  </Label>
+                  <Input
+                    id="middleName"
+                    {...form.register("middleName")}
+                    className="h-10"
+                    placeholder="Middle name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm font-medium">
+                    Last Name
+                  </Label>
+                  <Input
+                    id="lastName"
+                    {...form.register("lastName")}
+                    className="h-10"
+                    placeholder="Last name"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="image">Image URL</Label>
-            <Input id="image" {...form.register("image")} />
+
+          {/* Contact Information Section */}
+          <div className="space-y-4 pt-2 border-t">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Contact Information
+            </h3>
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="email"
+                  {...form.register("email")}
+                  className="h-10"
+                  placeholder="email@example.com"
+                  type="email"
+                />
+                {form.formState.errors.email && (
+                  <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                    <span className="inline-block w-1 h-1 rounded-full bg-red-500"></span>
+                    {form.formState.errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium">
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone"
+                  {...form.register("phone")}
+                  className="h-10"
+                  placeholder="+1 (555) 000-0000"
+                  type="tel"
+                />
+              </div>
+            </div>
           </div>
-          <Button type="submit" disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Adding..." : "Add Client"}
-          </Button>
+
+          {/* Personal Details Section */}
+          <div className="space-y-4 pt-2 border-t">
+            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+              Personal Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Gender</Label>
+                <Select
+                  onValueChange={value =>
+                    form.setValue("gender", value as Gender)
+                  }
+                >
+                  <SelectTrigger className="h-10 w-full">
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={Gender.MALE}>Male</SelectItem>
+                    <SelectItem value={Gender.FEMALE}>Female</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Birthday</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full h-10 justify-start text-left font-normal",
+                        !form.watch("birthday") && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.watch("birthday") ? (
+                        format(form.watch("birthday") as Date, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={form.watch("birthday")}
+                      onSelect={date => form.setValue("birthday", date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 h-10"
+              onClick={() => setIsOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={form.formState.isSubmitting}
+              className="flex-1 h-10"
+            >
+              {form.formState.isSubmitting ? "Adding..." : "Add Client"}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

@@ -1,4 +1,5 @@
 "use client";
+import { DeleteClientDialog } from "@/components/delete-client-dialog";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,8 @@ export const columns: ColumnDef<User>[] = [
             >
               Copy client ID
             </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DeleteClientDialog clientId={client.id} />
           </DropdownMenuContent>
         </DropdownMenu>
       );

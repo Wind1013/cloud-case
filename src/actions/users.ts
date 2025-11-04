@@ -67,6 +67,7 @@ export async function createUser(formData: FormData) {
         role: UserRole.CLIENT,
       },
     });
+    revalidatePath("/clients")
     return {
       success: "Client created successfully",
     };
@@ -184,5 +185,17 @@ export async function getNewClientsCount() {
     return { success: true, data: count };
   } catch (error) {
     return { success: false, error: (error as Error).message };
+  }
+}
+
+export async function deleteUser(id: string) {
+  try {
+    await prisma.user.delete({
+      where: { id },
+    });
+    revalidatePath("/clients");
+    return { success: "Client deleted successfully" };
+  } catch (error) {
+    return { error: "Failed to delete client" };
   }
 }
