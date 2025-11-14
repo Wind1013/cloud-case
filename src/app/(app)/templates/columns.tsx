@@ -67,7 +67,6 @@ export const columns: ColumnDef<Template>[] = [
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem>
                 <Link href={`/templates/${template.id}/use`}>Use Template</Link>
               </DropdownMenuItem>
@@ -78,7 +77,7 @@ export const columns: ColumnDef<Template>[] = [
               <DropdownMenuSeparator />
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <DropdownMenuItem onSelect={e => e.preventDefault()}>
                     Archive
                   </DropdownMenuItem>
                 </AlertDialogTrigger>
@@ -104,7 +103,7 @@ export const columns: ColumnDef<Template>[] = [
               </AlertDialog>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                  <DropdownMenuItem onSelect={e => e.preventDefault()}>
                     Delete
                   </DropdownMenuItem>
                 </AlertDialogTrigger>

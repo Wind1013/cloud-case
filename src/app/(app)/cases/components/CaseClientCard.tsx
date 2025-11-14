@@ -51,23 +51,6 @@ const CaseClientCard = ({ client }: { client: User }) => {
             </Badge>
           </div>
         </div>
-
-        <Separator />
-
-        <div className="flex gap-2">
-          <Button size="sm" className="flex-1 gap-2">
-            <Mail className="h-4 w-4" />
-            Email
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1 gap-2 bg-transparent"
-          >
-            <Phone className="h-4 w-4" />
-            Call
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
