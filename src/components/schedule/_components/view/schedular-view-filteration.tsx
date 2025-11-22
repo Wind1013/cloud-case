@@ -132,6 +132,23 @@ export default function SchedulerViewFilteration({
                 )}
               </TabsList>
 
+              {/* Legend for case types */}
+              <div className="hidden items-center gap-4 text-sm text-muted-foreground md:flex">
+                <span className="font-medium">Legend:</span>
+                <div className="flex items-center gap-1">
+                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                  Criminal
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="h-3 w-3 rounded-full bg-blue-500" />
+                  Civil
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="h-3 w-3 rounded-full bg-green-500" />
+                  Administrative
+                </div>
+              </div>
+
               {/* Add Event Button */}
               {CustomComponents?.customButtons?.CustomAddEventButton ? (
                 <div onClick={() => handleAddEvent()}>
