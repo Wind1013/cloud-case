@@ -7,7 +7,7 @@ import {
   FileText,
   ImageIcon,
   File,
-  Trash2,
+  Archive,
   EllipsisVertical,
 } from "lucide-react";
 import { Document } from "@/generated/prisma";
@@ -17,8 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { IconDotsVertical } from "@tabler/icons-react";
-import { deleteDocument } from "@/actions/document";
+import { archiveDocument } from "@/actions/document";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -77,7 +76,9 @@ export default function CaseFilesList({
 }) {
   const router = useRouter();
   const [openAlertDialog, setOpenAlertDialog] = useState(false);
-  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
+  const [documentToArchive, setDocumentToArchive] = useState<Document | null>(
+    null
+  );
 
   const handleView = (document: Document & { signedUrl?: string }) => {
     // Use signedUrl if available, fallback to url
@@ -94,28 +95,28 @@ export default function CaseFilesList({
     link.click();
   };
 
-  const handleDeleteClick = (document: Document) => {
-    setDocumentToDelete(document);
+  const handleArchiveClick = (document: Document) => {
+    setDocumentToArchive(document);
     setOpenAlertDialog(true);
   };
 
-  const confirmDelete = async () => {
-    if (!documentToDelete) return;
+  const confirmArchive = async () => {
+    if (!documentToArchive) return;
 
     try {
-      const result = await deleteDocument(documentToDelete.id);
+      const result = await archiveDocument(documentToArchive.id);
 
       if (result.success) {
-        toast.success("Document deleted successfully");
+        toast.success("Document archived successfully");
         router.refresh();
       } else {
-        toast.error(result.error || "Failed to delete document");
+        toast.error(result.error || "Failed to archive document");
       }
     } catch (error) {
-      toast.error("Failed to delete document");
+      toast.error("Failed to archive document");
     } finally {
       setOpenAlertDialog(false);
-      setDocumentToDelete(null);
+      setDocumentToArchive(null);
     }
   };
 
@@ -190,26 +191,29 @@ export default function CaseFilesList({
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <DropdownMenuItem
-                            onSelect={(e) => {
+                            onSelect={e => {
                               e.preventDefault();
-                              handleDeleteClick(document);
+                              handleArchiveClick(document);
                             }}
                           >
-                            <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            <Archive className="mr-2 h-4 w-4" /> Archive
                           </DropdownMenuItem>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogTitle>
+                              Are you sure you want to archive this document?
+                            </AlertDialogTitle>
                             <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete
-                              <span className="font-bold"> {documentToDelete?.name} </span>
-                              and remove its data from our servers.
+                              This action will move the document to the archive. You can
+                              recover it later.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={confirmDelete}>Continue</AlertDialogAction>
+                            <AlertDialogAction onClick={confirmArchive}>
+                              Continue
+                            </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>

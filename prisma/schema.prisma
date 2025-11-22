@@ -155,6 +155,7 @@ model Document {
   caseId    String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  isArchived Boolean @default(false)
 
   case      Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
