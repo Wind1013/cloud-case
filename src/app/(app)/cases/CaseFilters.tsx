@@ -41,7 +41,6 @@ const caseStatuses = [
     icon: IconClock,
   },
   { value: "DECISION", label: "Decision", icon: IconCheck },
-  { value: "ARCHIVED", label: "Archived", icon: IconArchive },
 ];
 
 export function CaseFilters() {
