@@ -28,10 +28,10 @@ export default function TemplateEditor({ template }: { template?: Template }) {
       try {
         if (template) {
           await updateTemplate(template.id, { name, content });
-          router.push(`/templates/${template.id}`);
+          router.push(`/legal-forms/${template.id}`);
         } else {
           await createTemplate({ name, content });
-          router.push("/templates");
+          router.push("/legal-forms");
         }
       } catch (error) {
         alert(`Failed to ${template ? "update" : "create"} template`);
@@ -49,7 +49,7 @@ export default function TemplateEditor({ template }: { template?: Template }) {
           <input
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             placeholder="e.g., Affidavit of Loss"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
@@ -59,13 +59,10 @@ export default function TemplateEditor({ template }: { template?: Template }) {
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <label className="block text-sm font-medium text-gray-700">
-              Template Content
+              Form Content
             </label>
           </div>
-          <RichTextEditor
-            onChange={setContent}
-            initialContent={content}
-          />
+          <RichTextEditor onChange={setContent} initialContent={content} />
         </div>
 
         <button

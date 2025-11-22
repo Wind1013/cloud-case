@@ -24,21 +24,21 @@ export default async function ViewTemplatePage({
         <div className="flex gap-4">
           <PreviewButton templateId={template.id} />
           <Link
-            href={`/templates/${template.id}/use`}
+            href={`/legal-forms/${template.id}/use`}
             className={buttonVariants()}
           >
-            Use Template
+            Use Form
           </Link>
           <Link
-            href={`/templates/${template.id}/edit`}
+            href={`/legal-forms/${template.id}/edit`}
             className={buttonVariants()}
           >
-            Edit Template
+            Edit Form
           </Link>
         </div>
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold mb-4">Template Content</h2>
+        <h2 className="text-xl font-bold mb-4">Form Content</h2>
         <div
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: htmlContent }}

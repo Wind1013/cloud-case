@@ -68,11 +68,11 @@ export const columns: ColumnDef<Template>[] = [
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem>
-                <Link href={`/templates/${template.id}/use`}>Use Template</Link>
+                <Link href={`/legal-forms/${template.id}/use`}>Use Form</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href={`/templates/${template.id}`}>View details</Link>
+                <Link href={`/legal-forms/${template.id}`}>View details</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <AlertDialog>
@@ -93,34 +93,7 @@ export const columns: ColumnDef<Template>[] = [
                     <AlertDialogAction
                       onClick={async () => {
                         await archiveTemplate(template.id);
-                        toast.success("Template archived");
-                      }}
-                    >
-                      Continue
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem onSelect={e => e.preventDefault()}>
-                    Delete
-                  </DropdownMenuItem>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete
-                      the template.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={async () => {
-                        await deleteTemplate(template.id);
-                        toast.success("Template deleted");
+                        toast.success("Form archived");
                       }}
                     >
                       Continue

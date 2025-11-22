@@ -365,14 +365,6 @@ export default function ToolbarPlugin() {
         <IconAlignJustified className="h-5 w-5" />
       </button>
       <div className="h-6 w-px bg-gray-300 mx-2" />
-      <button
-        type="button"
-        onClick={insertVariable}
-        className="p-1.5 rounded hover:bg-gray-200 ml-auto"
-        aria-label="Insert Variable"
-      >
-        + Insert variable
-      </button>
     </div>
   );
 }

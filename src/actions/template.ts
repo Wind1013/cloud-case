@@ -107,7 +107,7 @@ export async function createTemplate(data: { name: string; content: string }) {
     },
   });
 
-  revalidatePath("/templates");
+  revalidatePath("/legal-forms");
   return template;
 }
 
@@ -134,8 +134,8 @@ export async function updateTemplate(
     data: { name, content, variables },
   });
 
-  revalidatePath("/templates");
-  revalidatePath(`/templates/${id}`);
+  revalidatePath("/legal-forms");
+  revalidatePath(`/legal-forms/${id}`);
   return updated;
 }
 
@@ -154,7 +154,7 @@ export async function deleteTemplate(id: string) {
     where: { id },
   });
 
-  revalidatePath("/templates");
+  revalidatePath("/legal-forms");
   return { success: true };
 }
 
@@ -166,7 +166,7 @@ export async function archiveTemplate(id: string) {
   });
 
   if (!existing) {
-    throw new Error("Template not found");
+    throw new Error("Form not found");
   }
 
   await prisma.template.update({
@@ -174,6 +174,6 @@ export async function archiveTemplate(id: string) {
     data: { status: "ARCHIVED" },
   });
 
-  revalidatePath("/templates");
+  revalidatePath("/legal-forms");
   return { success: true };
 }
