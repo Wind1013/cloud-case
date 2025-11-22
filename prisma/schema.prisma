@@ -202,13 +202,17 @@ enum TemplateState {
 }
 
 model Template {
-  id        String      @id @default(cuid())
-  name      String
-  content   String      @db.Text // HTML content with {{placeholders}}
-  variables Json // Array of variable names extracted from content
-  status    TemplateState @default(ACTIVE)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id           String      @id @default(cuid())
+  name         String
+  content      String      @db.Text // HTML content with {{placeholders}}
+  variables    Json // Array of variable names extracted from content
+  status       TemplateState @default(ACTIVE)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  marginTop    Float?
+  marginRight  Float?
+  marginBottom Float?
+  marginLeft   Float?
 
   @@map("templates")
 }

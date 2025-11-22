@@ -41,9 +41,17 @@ function OnChange(onChange: (editorState: EditorState) => void) {
 export default function RichTextEditor({
   onChange,
   initialContent,
+  marginTop = 0,
+  marginRight = 0,
+  marginBottom = 0,
+  marginLeft = 0,
 }: {
   onChange: (content: string) => void;
   initialContent?: string;
+  marginTop?: number;
+  marginRight?: number;
+  marginBottom?: number;
+  marginLeft?: number;
 }) {
   const initialConfig = {
     namespace: "MyEditor",
@@ -80,13 +88,23 @@ export default function RichTextEditor({
     onChange(JSON.stringify(editorStateJSON));
   };
 
+  const editorStyle = {
+    marginTop: `${marginTop}in`,
+    marginRight: `${marginRight}in`,
+    marginBottom: `${marginBottom}in`,
+    marginLeft: `${marginLeft}in`,
+  };
+
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <div className="editor-container relative border border-gray-300 rounded-lg">
         <ToolbarPlugin />
         <RichTextPlugin
           contentEditable={
-            <ContentEditable className="editor-input min-h-[100px] p-4 focus:outline-none" />
+            <ContentEditable
+              className="editor-input min-h-[100px] p-4 focus:outline-none"
+              style={editorStyle}
+            />
           }
           placeholder={
             <div className="editor-placeholder absolute top-14 left-4 text-gray-400">

@@ -87,10 +87,24 @@ export async function getTemplate(id: string) {
 }
 
 // Create template
-export async function createTemplate(data: { name: string; content: string }) {
+export async function createTemplate(data: {
+  name: string;
+  content: string;
+  marginTop?: number;
+  marginRight?: number;
+  marginBottom?: number;
+  marginLeft?: number;
+}) {
   await getServerSession();
 
-  const { name, content } = data;
+  const {
+    name,
+    content,
+    marginTop,
+    marginRight,
+    marginBottom,
+    marginLeft,
+  } = data;
 
   if (!name || !content) {
     throw new Error("Name and content are required");
@@ -104,6 +118,10 @@ export async function createTemplate(data: { name: string; content: string }) {
       name,
       content,
       variables,
+      marginTop,
+      marginRight,
+      marginBottom,
+      marginLeft,
     },
   });
 
@@ -114,7 +132,14 @@ export async function createTemplate(data: { name: string; content: string }) {
 // Update template
 export async function updateTemplate(
   id: string,
-  data: { name: string; content: string }
+  data: {
+    name: string;
+    content: string;
+    marginTop?: number;
+    marginRight?: number;
+    marginBottom?: number;
+    marginLeft?: number;
+  }
 ) {
   await getServerSession();
   const existing = await prisma.template.findUnique({
@@ -125,13 +150,28 @@ export async function updateTemplate(
     throw new Error("Template not found");
   }
 
-  const { name, content } = data;
+  const {
+    name,
+    content,
+    marginTop,
+    marginRight,
+    marginBottom,
+    marginLeft,
+  } = data;
   const html = lexicalToHtml(content);
   const variables = extractVariables(html);
 
   const updated = await prisma.template.update({
     where: { id },
-    data: { name, content, variables },
+    data: {
+      name,
+      content,
+      variables,
+      marginTop,
+      marginRight,
+      marginBottom,
+      marginLeft,
+    },
   });
 
   revalidatePath("/legal-forms");
