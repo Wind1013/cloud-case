@@ -67,6 +67,7 @@ model User {
   clientAppointments  Appointment[] @relation("ClientAppointments")
 
   notes         Note[]
+  isArchived    Boolean   @default(false)
 
   @@unique([email])
   @@map("user")

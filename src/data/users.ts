@@ -11,6 +11,7 @@ export const getUsers = async ({ role, query }: GetUsersParams) => {
   try {
     const users = await prisma.user.findMany({
       where: {
+        isArchived: false,
         ...(role ? { role: role } : {}),
         ...(query
           ? {
@@ -52,6 +53,7 @@ export const getUsers = async ({ role, query }: GetUsersParams) => {
         emailVerified: true,
         image: true,
         updatedAt: true,
+        isArchived: true,
       },
     });
 
@@ -59,6 +61,63 @@ export const getUsers = async ({ role, query }: GetUsersParams) => {
   } catch (error) {
     console.error("[GET_USERS_ERROR]", error);
     throw new Error("Failed to fetch users");
+  }
+};
+
+export const getArchivedUsers = async ({ role, query }: GetUsersParams) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        isArchived: true,
+        ...(role ? { role: role } : {}),
+        ...(query
+          ? {
+              OR: [
+                {
+                  firstName: {
+                    contains: query,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  lastName: {
+                    contains: query,
+                    mode: "insensitive",
+                  },
+                },
+                {
+                  email: {
+                    contains: query,
+                    mode: "insensitive",
+                  },
+                },
+              ],
+            }
+          : {}),
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        middleName: true,
+        gender: true,
+        birthday: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+        emailVerified: true,
+        image: true,
+        updatedAt: true,
+        isArchived: true,
+      },
+    });
+
+    return users;
+  } catch (error) {
+    console.error("[GET_ARCHIVED_USERS_ERROR]", error);
+    throw new Error("Failed to fetch archived users");
   }
 };
 

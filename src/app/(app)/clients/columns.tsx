@@ -13,6 +13,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User } from "@/generated/prisma";
 import Link from "next/link";
+import { archiveUser, unarchiveUser } from "@/actions/users";
+import { toast } from "sonner";
+
+async function onArchive(id: string) {
+  const result = await archiveUser(id);
+  if (result.success) {
+    toast.success(result.success);
+  } else {
+    toast.error(result.error);
+  }
+}
+
+async function onUnarchive(id: string) {
+  const result = await unarchiveUser(id);
+  if (result.success) {
+    toast.success(result.success);
+  } else {
+    toast.error(result.error);
+  }
+}
 
 export const columns: ColumnDef<User>[] = [
   {
@@ -60,6 +80,15 @@ export const columns: ColumnDef<User>[] = [
               Copy client ID
             </DropdownMenuItem>
             <DropdownMenuSeparator />
+            {client.isArchived ? (
+              <DropdownMenuItem onClick={() => onUnarchive(client.id)}>
+                Unarchive
+              </DropdownMenuItem>
+            ) : (
+              <DropdownMenuItem onClick={() => onArchive(client.id)}>
+                Archive
+              </DropdownMenuItem>
+            )}
             <DeleteClientDialog clientId={client.id} />
           </DropdownMenuContent>
         </DropdownMenu>

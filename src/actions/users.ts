@@ -67,7 +67,7 @@ export async function createUser(formData: FormData) {
         role: UserRole.CLIENT,
       },
     });
-    revalidatePath("/clients")
+    revalidatePath("/clients");
     return {
       success: "Client created successfully",
     };
@@ -197,5 +197,31 @@ export async function deleteUser(id: string) {
     return { success: "Client deleted successfully" };
   } catch (error) {
     return { error: "Failed to delete client" };
+  }
+}
+
+export async function archiveUser(id: string) {
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { isArchived: true },
+    });
+    revalidatePath("/clients");
+    return { success: "Client archived successfully" };
+  } catch (error) {
+    return { error: "Failed to archive client" };
+  }
+}
+
+export async function unarchiveUser(id: string) {
+  try {
+    await prisma.user.update({
+      where: { id },
+      data: { isArchived: false },
+    });
+    revalidatePath("/clients");
+    return { success: "Client unarchived successfully" };
+  } catch (error) {
+    return { error: "Failed to unarchive client" };
   }
 }
