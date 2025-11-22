@@ -38,10 +38,15 @@ export default async function ViewTemplatePage({
         </div>
       </div>
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold mb-4">Form Content</h2>
         <div
           className="prose max-w-none"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
+          style={{
+            paddingTop: `${template.marginTop}in`,
+            paddingRight: `${template.marginRight}in`,
+            paddingBottom: `${template.marginBottom}in`,
+            paddingLeft: `${template.marginLeft}in`,
+          }}
         />
       </div>
     </div>
