@@ -1,11 +1,12 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { User } from "@/generated/prisma";
 import { format } from "date-fns";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import {
   Calendar as CalendarIcon,
   User as UserIcon,
@@ -43,6 +44,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const editClientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -52,7 +54,13 @@ const editClientSchema = z.object({
   gender: z.nativeEnum(Gender).optional(),
   birthday: z.date().optional(),
   email: z.email("Invalid email address"),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .refine(
+      value => isValidPhoneNumber(value, "PH"),
+      "Please enter a valid Philippine phone number"
+    )
+    .optional(),
   image: z.string().optional(),
 });
 
@@ -217,15 +225,23 @@ export function EditClientForm({ user }: { user: User }) {
                   <Label htmlFor="phone" className="text-sm font-medium">
                     Phone Number
                   </Label>
-                  <div className="relative mt-1.5">
-                    <Input
-                      id="phone"
-                      {...form.register("phone")}
-                      className="pl-10"
-                      placeholder="+1 (555) 000-0000"
-                    />
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  </div>
+                  <Controller
+                    name="phone"
+                    control={form.control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        {...field}
+                        defaultCountry="PH"
+                        international
+                        className="mt-1.5"
+                      />
+                    )}
+                  />
+                  {form.formState.errors.phone && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {form.formState.errors.phone.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

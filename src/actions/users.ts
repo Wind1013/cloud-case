@@ -12,13 +12,13 @@ export interface GetUsersParams {
 const createUserSchema = z.object({
   name: z.string(),
   email: z.string().email(),
-  phone: z.string().optional(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
-  middleName: z.string().optional(),
-  gender: z.nativeEnum(Gender).optional(),
-  birthday: z.string().optional(),
-  image: z.string().optional(),
+  phone: z.string().nullable().optional(),
+  firstName: z.string().nullable().optional(),
+  lastName: z.string().nullable().optional(),
+  middleName: z.string().nullable().optional(),
+  gender: z.nativeEnum(Gender).nullable().optional(),
+  birthday: z.string().nullable().optional(),
+  image: z.string().nullable().optional(),
 });
 
 export async function createUser(formData: FormData) {

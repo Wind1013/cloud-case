@@ -1,7 +1,12 @@
 "use client";
 
 import type React from "react";
-
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { isValidPhoneNumber } from "react-phone-number-input";
+import { Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,38 +19,99 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { signUp } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { Loader } from "lucide-react";
+import { toast } from "sonner";
+
+const signUpSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    middleName: z.string().default(""),
+    gender: z.string().default(""),
+    birthday: z.string().optional().default(""),
+    phone: z
+      .string()
+      .refine(
+        value => isValidPhoneNumber(value, "PH"),
+        "Please enter a valid Philippine phone number"
+      ),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(6, "Confirm password is required"),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
+
+type SignUpFormData = z.infer<typeof signUpSchema>;
+
+function FormField({
+  label,
+  error,
+  children,
+  className,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("grid gap-2", className)}>
+      <Label>{label}</Label>
+      {children}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
+  );
+}
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm({
+    resolver: zodResolver(signUpSchema),
+    mode: "onBlur",
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      middleName: "",
+      gender: "",
+      birthday: "",
+      phone: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-    const formData = new FormData(e.currentTarget);
+  const phone = watch("phone");
 
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
+  async function onSubmit(data: SignUpFormData) {
+    setServerError(null);
+
     const userData = {
-      name: `${firstName} ${lastName}`.trim(),
-      email: formData.get("email") as string,
-      password: formData.get("password") as string,
-      firstName: firstName || "",
-      lastName: lastName || "",
-      middleName: (formData.get("middleName") as string) || undefined,
-      gender: (formData.get("gender") as string) || undefined,
-      birthday: (formData.get("birthday") as string) || undefined,
-      phone: (formData.get("phone") as string) || undefined,
+      name: `${data.firstName} ${data.lastName}`.trim(),
+      email: data.email,
+      password: data.password,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      middleName: data.middleName,
+      gender: data.gender,
+      birthday: data.birthday,
+      phone: data.phone,
     };
 
     try {
@@ -55,14 +121,12 @@ export function SignUpForm({
       });
 
       if (res.error) {
-        setError(res.error.message || "Something went wrong.");
+        setServerError(res.error.message || "Something went wrong.");
       } else {
         router.push("/dashboard");
       }
     } catch (err) {
-      setError("An unexpected error occurred.");
-    } finally {
-      setIsLoading(false);
+      setServerError("An unexpected error occurred.");
     }
   }
 
@@ -73,104 +137,112 @@ export function SignUpForm({
           <CardTitle className="text-xl">Create your account</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-6">
-              {error && (
+              {serverError && (
                 <div className="text-sm text-destructive text-center">
-                  {error}
+                  {serverError}
                 </div>
               )}
 
               <div className="grid gap-6">
                 {/* Name Fields */}
                 <div className="grid gap-3 md:grid-cols-2">
-                  <div className="grid gap-3">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      placeholder="John"
-                    />
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder="Doe"
-                    />
-                  </div>
+                  <FormField
+                    label="First Name"
+                    error={errors.firstName?.message}
+                  >
+                    <Input {...register("firstName")} placeholder="John" />
+                  </FormField>
+                  <FormField label="Last Name" error={errors.lastName?.message}>
+                    <Input {...register("lastName")} placeholder="Doe" />
+                  </FormField>
                 </div>
 
-                <div className="grid gap-3">
-                  <Label htmlFor="middleName">Middle Name</Label>
-                  <Input
-                    id="middleName"
-                    name="middleName"
-                    type="text"
-                    placeholder="Optional"
-                  />
-                </div>
+                <FormField
+                  label="Middle Name"
+                  error={errors.middleName?.message}
+                >
+                  <Input {...register("middleName")} placeholder="Optional" />
+                </FormField>
 
                 {/* Gender and Birthday */}
                 <div className="grid gap-3 md:grid-cols-2">
-                  <div className="grid gap-3">
-                    <Label htmlFor="gender">Gender</Label>
-                    <Select name="gender">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select gender" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="MALE">Male</SelectItem>
-                        <SelectItem value="FEMALE">Female</SelectItem>
-                        {/* <SelectItem value="other">Other</SelectItem>
-                        <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem> */}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="grid gap-3">
-                    <Label htmlFor="birthday">Birthday</Label>
-                    <Input id="birthday" name="birthday" type="date" />
-                  </div>
+                  <FormField label="Gender" error={errors.gender?.message}>
+                    <Controller
+                      name="gender"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="MALE">Male</SelectItem>
+                            <SelectItem value="FEMALE">Female</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  </FormField>
+                  <FormField label="Birthday" error={errors.birthday?.message}>
+                    <Input {...register("birthday")} type="date" />
+                  </FormField>
                 </div>
 
                 {/* Contact Information */}
-                <div className="grid gap-3">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
+                <FormField label="Phone Number" error={errors.phone?.message}>
+                  <Controller
                     name="phone"
-                    type="tel"
-                    placeholder="+1 (555) 123-4567"
+                    control={control}
+                    render={({ field }) => (
+                      <PhoneInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        defaultCountry="PH"
+                        international
+                      />
+                    )}
                   />
-                </div>
+                </FormField>
 
-                <div className="grid gap-3">
-                  <Label htmlFor="email">Email</Label>
+                <FormField label="Email" error={errors.email?.message}>
                   <Input
-                    id="email"
-                    name="email"
+                    {...register("email")}
                     type="email"
                     placeholder="m@example.com"
-                    required
                   />
-                </div>
+                </FormField>
 
-                <div className="grid gap-3">
-                  <Label htmlFor="password">Password</Label>
+                <FormField label="Password" error={errors.password?.message}>
                   <Input
-                    id="password"
-                    name="password"
+                    {...register("password")}
                     type="password"
-                    required
+                    placeholder="••••••"
                   />
-                </div>
+                </FormField>
 
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <Loader className="animate-spin" />
+                <FormField
+                  label="Confirm Password"
+                  error={errors.confirmPassword?.message}
+                >
+                  <Input
+                    {...register("confirmPassword")}
+                    type="password"
+                    placeholder="••••••"
+                  />
+                </FormField>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader className="h-4 w-4 animate-spin" />
                   ) : (
                     "Create account"
                   )}
