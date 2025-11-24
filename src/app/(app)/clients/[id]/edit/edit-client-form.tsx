@@ -57,10 +57,11 @@ const editClientSchema = z.object({
   phone: z
     .string()
     .refine(
-      value => isValidPhoneNumber(value, "PH"),
+      (value) => isValidPhoneNumber(value, "PH"),
       "Please enter a valid Philippine phone number"
     )
     .optional(),
+  address: z.string().optional(),
   image: z.string().optional(),
 });
 
@@ -74,6 +75,7 @@ export function EditClientForm({ user }: { user: User }) {
       name: user.name ?? "",
       email: user.email ?? "",
       phone: user.phone ?? "",
+      address: user.address ?? "",
       firstName: user.firstName ?? "",
       lastName: user.lastName ?? "",
       middleName: user.middleName ?? "",
@@ -89,6 +91,9 @@ export function EditClientForm({ user }: { user: User }) {
     formData.append("email", values.email);
     if (values.phone) {
       formData.append("phone", values.phone);
+    }
+    if (values.address) {
+      formData.append("address", values.address);
     }
     if (values.firstName) {
       formData.append("firstName", values.firstName);
@@ -243,6 +248,17 @@ export function EditClientForm({ user }: { user: User }) {
                     </p>
                   )}
                 </div>
+                <div className="md:col-span-2">
+                  <Label htmlFor="address" className="text-sm font-medium">
+                    Address
+                  </Label>
+                  <Input
+                    id="address"
+                    {...form.register("address")}
+                    className="mt-1.5"
+                    placeholder="Enter address"
+                  />
+                </div>
               </div>
             </div>
 
@@ -259,7 +275,7 @@ export function EditClientForm({ user }: { user: User }) {
                   <Label className="text-sm font-medium">Gender</Label>
                   <Select
                     defaultValue={user.gender ?? undefined}
-                    onValueChange={value =>
+                    onValueChange={(value) =>
                       form.setValue("gender", value as Gender)
                     }
                   >
@@ -295,7 +311,7 @@ export function EditClientForm({ user }: { user: User }) {
                       <Calendar
                         mode="single"
                         selected={form.watch("birthday")}
-                        onSelect={date => form.setValue("birthday", date)}
+                        onSelect={(date) => form.setValue("birthday", date)}
                         autoFocus
                       />
                     </PopoverContent>

@@ -51,6 +51,7 @@ model User {
   gender        Gender?
   birthday      DateTime?
   phone         String?
+  address       String?
   email         String
   emailVerified Boolean   @default(false)
   role          UserRole  @default(CLIENT)

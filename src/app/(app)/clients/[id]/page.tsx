@@ -1,7 +1,14 @@
 import { ClientCasesTable } from "@/components/client-cases-table";
 import { columns } from "@/components/client-cases-columns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Mail, Phone, Cake, User as UserIcon, Calendar } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  Cake,
+  User as UserIcon,
+  Calendar,
+  MapPin,
+} from "lucide-react";
 import { format } from "date-fns";
 import { Notes } from "@/components/notes";
 import { getUserById } from "@/data/users";
@@ -23,7 +30,7 @@ export default async function ClientDetailPage({
 
   const getInitials = (name: string) => {
     const names = name.split(" ");
-    const initials = names.map(n => n[0]).join("");
+    const initials = names.map((n) => n[0]).join("");
     return initials.toUpperCase();
   };
 
@@ -49,6 +56,12 @@ export default async function ClientDetailPage({
                   <Phone className="w-4 h-4" />
                   <span>{client.phone}</span>
                 </div>
+                {client.address && (
+                  <div className="flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    <span>{client.address}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

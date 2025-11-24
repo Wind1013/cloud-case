@@ -57,10 +57,11 @@ const addClientSchema = z.object({
   phone: z
     .string()
     .refine(
-      value => !value || isValidPhoneNumber(value, "PH"),
+      (value) => !value || isValidPhoneNumber(value, "PH"),
       "Please enter a valid Philippine phone number"
     )
     .optional(),
+  address: z.string().optional(),
   image: z.string().optional(),
 });
 
@@ -75,6 +76,7 @@ export function AddClientModal() {
       name: "",
       email: "",
       phone: "",
+      address: "",
       firstName: "",
       lastName: "",
       middleName: "",
@@ -88,6 +90,9 @@ export function AddClientModal() {
     formData.append("email", values.email);
     if (values.phone) {
       formData.append("phone", values.phone);
+    }
+    if (values.address) {
+      formData.append("address", values.address);
     }
     if (values.firstName) {
       formData.append("firstName", values.firstName);
@@ -257,6 +262,23 @@ export function AddClientModal() {
                           onChange={field.onChange}
                           defaultCountry="PH"
                           international
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Address</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter address"
+                          className="h-10"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage />
