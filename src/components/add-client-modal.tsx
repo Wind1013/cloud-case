@@ -108,8 +108,6 @@ export function AddClientModal() {
       formData.append("image", values.image);
     }
 
-    toast.error("Formstate errors?" + JSON.stringify(form.formState.errors));
-
     const result = await createUser(formData);
 
     if (result.success) {
