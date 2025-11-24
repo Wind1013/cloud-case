@@ -48,9 +48,14 @@ export const columns: ColumnDef<User>[] = [
     header: "Email",
   },
   {
+    accessorKey: "address",
+    header: "Address",
+  },
+  {
     accessorKey: "phone",
     header: "Phone",
   },
+
   {
     accessorKey: "createdAt",
     header: "Created At",
@@ -92,6 +97,50 @@ export const columns: ColumnDef<User>[] = [
             <DeleteClientDialog clientId={client.id} />
           </DropdownMenuContent>
         </DropdownMenu>
+      );
+    },
+  },
+];
+
+export const archivedColumns: ColumnDef<User>[] = [
+  {
+    accessorKey: "name",
+    header: "Name",
+    cell: ({ row }) => {
+      const client = row.original;
+      return <Link href={`/clients/${client.id}`}>{client.name}</Link>;
+    },
+  },
+  {
+    accessorKey: "email",
+    header: "Email",
+  },
+  {
+    accessorKey: "phone",
+    header: "Phone",
+  },
+  {
+    accessorKey: "address",
+    header: "Address",
+  },
+  {
+    accessorKey: "createdAt",
+    header: "Created At",
+    cell: ({ row }) => {
+      const date = new Date(row.getValue("createdAt"));
+      const formatted = date.toLocaleDateString();
+      return <div className="font-medium">{formatted}</div>;
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const client = row.original;
+
+      return (
+        <Button onClick={() => onUnarchive(client.id)} variant="outline">
+          Unarchive
+        </Button>
       );
     },
   },

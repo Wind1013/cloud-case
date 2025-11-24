@@ -283,7 +283,7 @@ function ProfileForm({ user }: { user: User }) {
                     <FormControl>
                       <Input
                         type="tel"
-                        placeholder="(555) 555-5555"
+                        placeholder="(+63) 999-123-4567"
                         {...field}
                       />
                     </FormControl>

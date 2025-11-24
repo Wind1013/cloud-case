@@ -1,5 +1,5 @@
 import { getArchivedUsers, getUsers } from "@/data/users";
-import { columns } from "./columns";
+import { columns, archivedColumns } from "./columns";
 import { ClientDataTable } from "@/components/client-data-table";
 import { UserRole } from "@/generated/prisma";
 import { AddClientModal } from "@/components/add-client-modal";
@@ -36,7 +36,10 @@ async function ArchivedClients({
 
   return (
     <Suspense fallback={<TableLoader />}>
-      <ClientDataTable columns={columns as ColumnDef<User>[]} data={clients} />
+      <ClientDataTable
+        columns={archivedColumns as ColumnDef<User>[]}
+        data={clients}
+      />
     </Suspense>
   );
 }
