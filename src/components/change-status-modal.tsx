@@ -15,7 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { updateCaseStatus } from "@/actions/cases";
 import { toast } from "sonner";
 import { CaseData } from "./case-data-table";
@@ -37,8 +38,19 @@ const criminalStatuses: CaseData["status"][] = [
 ];
 const otherStatuses: CaseData["status"][] = [
   "PRELIMINARY_CONFERENCE",
+  "PRETRIAL",
   "TRIAL",
   "DECISION",
+];
+const allStatuses: CaseData["status"][] = [
+  "ARRAIGNMENT",
+  "PRETRIAL",
+  "TRIAL",
+  "PROMULGATION",
+  "REMEDIES",
+  "PRELIMINARY_CONFERENCE",
+  "DECISION",
+  "ARCHIVED",
 ];
 
 const statusConfig = {
@@ -81,19 +93,48 @@ export function ChangeStatusModal({
   isOpen,
   onClose,
 }: ChangeStatusModalProps) {
+  const router = useRouter();
   const [selectedStatus, setSelectedStatus] = useState<CaseData["status"]>(
     caseData.status
   );
   const [isPending, startTransition] = useTransition();
 
-  const availableStatuses =
-    caseData.type === "CRIMINAL" ? criminalStatuses : otherStatuses;
+  // Reset selected status when modal opens or caseData changes
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedStatus(caseData.status);
+    }
+  }, [isOpen, caseData.status]);
+
+  // Get available statuses based on case type, but always include current status
+  const getAvailableStatuses = () => {
+    const baseStatuses =
+      caseData.type === "CRIMINAL" ? criminalStatuses : otherStatuses;
+    
+    // Always include the current status if it's not in the base list
+    const statusSet = new Set(baseStatuses);
+    if (!statusSet.has(caseData.status)) {
+      statusSet.add(caseData.status);
+    }
+    
+    // Return as array, sorted to maintain consistency
+    return Array.from(statusSet).sort((a, b) => {
+      const allIndex = allStatuses.indexOf(a);
+      const bIndex = allStatuses.indexOf(b);
+      if (allIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return allIndex - bIndex;
+    });
+  };
+
+  const availableStatuses = getAvailableStatuses();
 
   const handleSave = () => {
     startTransition(async () => {
       const result = await updateCaseStatus(caseData.id, selectedStatus);
       if (result.success) {
         toast.success("Case status updated successfully");
+        router.refresh();
         onClose();
       } else {
         toast.error(result.error);
@@ -128,7 +169,10 @@ export function ChangeStatusModal({
             </SelectTrigger>
             <SelectContent>
               {availableStatuses.map(status => {
-                const config = statusConfig[status];
+                const config = statusConfig[status] || {
+                  icon: IconClock,
+                  color: "text-gray-600",
+                };
                 const Icon = config.icon;
                 return (
                   <SelectItem key={status} value={status}>

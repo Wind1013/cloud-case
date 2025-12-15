@@ -5,118 +5,134 @@ import prisma from "@/lib/prisma";
 export interface GetUsersParams {
   role?: UserRole;
   query?: string;
+  page?: number;
+  limit?: number;
 }
 
-export const getUsers = async ({ role, query }: GetUsersParams) => {
+export const getUsers = async ({ role, query, page = 1, limit = 10 }: GetUsersParams) => {
   try {
-    const users = await prisma.user.findMany({
-      where: {
-        isArchived: false,
-        ...(role ? { role: role } : {}),
-        ...(query
-          ? {
-              OR: [
-                {
-                  firstName: {
-                    contains: query,
-                    mode: "insensitive",
-                  },
+    const where = {
+      isArchived: false,
+      ...(role ? { role: role } : {}),
+      ...(query
+        ? {
+            OR: [
+              {
+                firstName: {
+                  contains: query,
                 },
-                {
-                  lastName: {
-                    contains: query,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                lastName: {
+                  contains: query,
                 },
-                {
-                  email: {
-                    contains: query,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                email: {
+                  contains: query,
                 },
-              ],
-            }
-          : {}),
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        firstName: true,
-        lastName: true,
-        middleName: true,
-        gender: true,
-        birthday: true,
-        phone: true,
-        address: true,
-        role: true,
-        createdAt: true,
-        emailVerified: true,
-        image: true,
-        updatedAt: true,
-        isArchived: true,
-      },
-    });
+              },
+            ],
+          }
+        : {}),
+    };
 
-    return users;
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          gender: true,
+          birthday: true,
+          phone: true,
+          address: true,
+          role: true,
+          createdAt: true,
+          emailVerified: true,
+          image: true,
+          updatedAt: true,
+          isArchived: true,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return { data: users, total };
   } catch (error) {
     console.error("[GET_USERS_ERROR]", error);
     throw new Error("Failed to fetch users");
   }
 };
 
-export const getArchivedUsers = async ({ role, query }: GetUsersParams) => {
+export const getArchivedUsers = async ({ role, query, page = 1, limit = 10 }: GetUsersParams) => {
   try {
-    const users = await prisma.user.findMany({
-      where: {
-        isArchived: true,
-        ...(role ? { role: role } : {}),
-        ...(query
-          ? {
-              OR: [
-                {
-                  firstName: {
-                    contains: query,
-                    mode: "insensitive",
-                  },
+    const where = {
+      isArchived: true,
+      ...(role ? { role: role } : {}),
+      ...(query
+        ? {
+            OR: [
+              {
+                firstName: {
+                  contains: query,
                 },
-                {
-                  lastName: {
-                    contains: query,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                lastName: {
+                  contains: query,
                 },
-                {
-                  email: {
-                    contains: query,
-                    mode: "insensitive",
-                  },
+              },
+              {
+                email: {
+                  contains: query,
                 },
-              ],
-            }
-          : {}),
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        firstName: true,
-        lastName: true,
-        middleName: true,
-        gender: true,
-        birthday: true,
-        phone: true,
-        address: true,
-        role: true,
-        createdAt: true,
-        emailVerified: true,
-        image: true,
-        updatedAt: true,
-        isArchived: true,
-      },
-    });
+              },
+            ],
+          }
+        : {}),
+    };
 
-    return users;
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          gender: true,
+          birthday: true,
+          phone: true,
+          address: true,
+          role: true,
+          createdAt: true,
+          emailVerified: true,
+          image: true,
+          updatedAt: true,
+          isArchived: true,
+        },
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    return { data: users, total };
   } catch (error) {
     console.error("[GET_ARCHIVED_USERS_ERROR]", error);
     throw new Error("Failed to fetch archived users");

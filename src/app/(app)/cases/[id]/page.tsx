@@ -2,7 +2,6 @@ import { getCaseById } from "@/data/cases";
 import type { Case } from "@/generated/prisma";
 import { notFound } from "next/navigation";
 import CaseClientCard from "../components/CaseClientCard";
-import CaseFilesCard from "../components/CaseFilesCard";
 import CaseOverviewCard from "../components/CaseOverviewCard";
 
 type CasePageProps = {
@@ -24,11 +23,6 @@ async function Case({ params }: CasePageProps) {
           <div className="lg:col-span-2 space-y-6">
             {/* Case Overview */}
             <CaseOverviewCard caseData={data.data as Case} />
-            {/* File Management */}
-            <CaseFilesCard
-              caseId={data.data.id}
-              documents={data.data?.documents ?? []}
-            />
           </div>
 
           {/* Sidebar */}

@@ -5,7 +5,7 @@ import { resetPassword } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 // Import enhanced UI components
 import {
   Card,
@@ -31,6 +31,7 @@ export function ResetPasswordForm() {
   const MIN_PASSWORD_LENGTH = 8;
 
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -42,6 +43,15 @@ export function ResetPasswordForm() {
       setIsSuccess(false);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      const timeout = setTimeout(() => {
+        router.push("/sign-in");
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isSuccess, router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,7 +88,7 @@ export function ResetPasswordForm() {
         newPassword: password,
         token,
       });
-      setMessage("Success! Your password has been reset. You can now log in.");
+      setMessage("Success! Your password has been reset. Redirecting to sign in...");
       setIsSuccess(true);
     } catch (error) {
       // Use a generic message as the error details might be sensitive

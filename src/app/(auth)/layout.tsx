@@ -7,7 +7,11 @@ export default async function AppLayout({
   const session = await getServerSession();
   const user = session?.user;
 
-  if (user) redirect("/dashboard");
+  // Only redirect to dashboard if user is verified
+  // Unverified users should stay on email-verified page
+  if (user?.emailVerified) {
+    redirect("/dashboard");
+  }
 
   return <>{children}</>;
 }

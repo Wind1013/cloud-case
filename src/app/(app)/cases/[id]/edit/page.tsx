@@ -4,9 +4,9 @@ import { notFound } from "next/navigation";
 import { getUsers } from "@/data/users";
 import { getCaseById } from "@/data/cases";
 
-async function EditPage({ params }: { params: { id: string } }) {
+async function EditPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const clients = await getUsers({ role: "CLIENT" });
+  const { data: clients } = await getUsers({ role: "CLIENT", limit: 1000 });
   const { data } = await getCaseById(id);
 
   if (!data) {

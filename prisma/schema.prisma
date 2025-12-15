@@ -127,18 +127,20 @@ model Verification {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now()) @updatedAt
 
+  @@index([identifier])
   @@map("verification")
 }
 
 model Case {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  type        CaseType   @default(CIVIL)
-  status      CaseStatus @default(PRELIMINARY_CONFERENCE)
-  clientId    String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             String      @id @default(cuid())
+  title          String
+  description    String?
+  type           CaseType    @default(CIVIL)
+  status         CaseStatus  @default(PRELIMINARY_CONFERENCE)
+  previousStatus CaseStatus?
+  clientId       String
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   client      User         @relation("ClientCases", fields: [clientId], references: [id])
   // tasks       Task[]

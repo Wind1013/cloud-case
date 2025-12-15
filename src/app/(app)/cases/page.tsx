@@ -30,16 +30,28 @@ async function ActiveCases({ searchParams }: CasesPageProps) {
     s => s !== "ARCHIVED"
   );
 
-  const { data } = await getCases({
+  const result = await getCases({
     query,
     types: parseToArray(type),
     statuses: status ? parseToArray(status) : activeStatuses,
   });
 
-  if (!data) {
-    return <h1>Error Fetching data</h1>;
+  if (!result.success) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-destructive mb-2">
+            Error Loading Cases
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {result.error || "An error occurred while fetching cases. Please try again."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
+  const data = result.data || [];
   const mappedData = data.map(item => ({
     id: item.id,
     title: item.title,
@@ -53,23 +65,35 @@ async function ActiveCases({ searchParams }: CasesPageProps) {
 
   return (
     <Suspense fallback={<TableLoader />}>
-      <CaseDataTable data={mappedData} />
+      <CaseDataTable data={mappedData} isArchived={false} searchQuery={query} />
     </Suspense>
   );
 }
 
 async function ArchivedCases({ searchParams }: CasesPageProps) {
   const { query, type } = await searchParams;
-  const { data } = await getCases({
+  const result = await getCases({
     query,
     types: parseToArray(type),
     statuses: ["ARCHIVED"],
   });
 
-  if (!data) {
-    return <h1>Error Fetching data</h1>;
+  if (!result.success) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-4">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-destructive mb-2">
+            Error Loading Cases
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {result.error || "An error occurred while fetching cases. Please try again."}
+          </p>
+        </div>
+      </div>
+    );
   }
 
+  const data = result.data || [];
   const mappedData = data.map(item => ({
     id: item.id,
     title: item.title,
@@ -83,7 +107,7 @@ async function ArchivedCases({ searchParams }: CasesPageProps) {
 
   return (
     <Suspense fallback={<TableLoader />}>
-      <CaseDataTable data={mappedData} />
+      <CaseDataTable data={mappedData} isArchived={true} searchQuery={query} />
     </Suspense>
   );
 }

@@ -1,14 +1,13 @@
 "use client";
 import { Card } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
-  Eye,
-  Download,
   FileText,
   ImageIcon,
   File,
   Archive,
   EllipsisVertical,
+  Loader2,
 } from "lucide-react";
 import { Document } from "@/generated/prisma";
 import {
@@ -32,6 +31,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { motion, AnimatePresence } from "framer-motion";
 
 const formatBytes = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
@@ -71,29 +71,22 @@ const formatDate = (date: Date): string => {
 
 export default function CaseFilesList({
   documents,
+  isLoading = false,
 }: {
   documents?: Document[] & { signedUrl?: string };
+  isLoading?: boolean;
 }) {
   const router = useRouter();
   const [openAlertDialog, setOpenAlertDialog] = useState(false);
   const [documentToArchive, setDocumentToArchive] = useState<Document | null>(
     null
   );
+  const [localDocuments, setLocalDocuments] = useState<Document[]>(documents || []);
 
-  const handleView = (document: Document & { signedUrl?: string }) => {
-    // Use signedUrl if available, fallback to url
-    const urlToOpen = document.signedUrl || document.url;
-    window.open(urlToOpen, "_blank");
-  };
-
-  const handleDownload = (document: Document & { signedUrl?: string }) => {
-    // Use signedUrl if available, fallback to url
-    const urlToDownload = document.signedUrl || document.url;
-    const link = window.document.createElement("a");
-    link.href = urlToDownload;
-    link.download = document.name;
-    link.click();
-  };
+  // Update local documents when props change
+  React.useEffect(() => {
+    setLocalDocuments(documents || []);
+  }, [documents]);
 
   const handleArchiveClick = (document: Document) => {
     setDocumentToArchive(document);
@@ -107,8 +100,13 @@ export default function CaseFilesList({
       const result = await archiveDocument(documentToArchive.id);
 
       if (result.success) {
+        // Remove from local state immediately for smooth animation
+        setLocalDocuments(prev => prev.filter(doc => doc.id !== documentToArchive.id));
         toast.success("Document archived successfully");
+        // Refresh after a short delay to sync with server
+        setTimeout(() => {
         router.refresh();
+        }, 300);
       } else {
         toast.error(result.error || "Failed to archive document");
       }
@@ -126,19 +124,48 @@ export default function CaseFilesList({
         <h2 className="text-2xl font-semibold text-foreground mb-2">
           Documents
         </h2>
-        <p className="text-muted-foreground">
-          {documents?.length ?? 0} document
-          {documents?.length !== 1 ? "s" : ""} total
-        </p>
+        <motion.p
+          key={localDocuments.length}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2 }}
+          className="text-muted-foreground"
+        >
+          {localDocuments.length} document
+          {localDocuments.length !== 1 ? "s" : ""} total
+        </motion.p>
       </div>
 
       <Card className="p-6">
         <div className="space-y-4 max-h-96 overflow-y-auto">
-          {documents && documents.length > 0 ? (
-            documents.map(document => (
-              <div
+          {isLoading && localDocuments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+              <p className="text-sm text-muted-foreground">Uploading files...</p>
+            </div>
+          ) : localDocuments && localDocuments.length > 0 ? (
+            <AnimatePresence mode="popLayout" initial={false}>
+              {localDocuments.map((document, index) => (
+                <motion.div
                 key={document.id}
-                className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                  initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ 
+                    opacity: 0, 
+                    y: 20, 
+                    scale: 0.9,
+                    height: 0,
+                    marginBottom: 0,
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  }}
+                  transition={{
+                    duration: 0.25,
+                    delay: index * 0.03,
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
+                  layout
+                  className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors overflow-hidden"
               >
                 <div className="flex items-center space-x-4 flex-1 min-w-0">
                   <div className="flex-shrink-0">
@@ -162,22 +189,6 @@ export default function CaseFilesList({
                   </div>
                 </div>
                 <div className="flex items-center space-x-1 ml-4">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleView(document)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDownload(document)}
-                    className="h-8 w-8 p-0"
-                  >
-                    <Download className="h-4 w-4 p-0" />
-                  </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger
                       className={buttonVariants({
@@ -220,12 +231,19 @@ export default function CaseFilesList({
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              </div>
-            ))
+                </motion.div>
+              ))}
+            </AnimatePresence>
           ) : (
-            <div className="text-center text-muted-foreground py-8">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-center text-muted-foreground py-8"
+            >
               No documents found.
-            </div>
+            </motion.div>
           )}
         </div>
       </Card>

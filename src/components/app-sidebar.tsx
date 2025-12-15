@@ -33,7 +33,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
 import Image from "next/image";
 
 const data = {
@@ -160,15 +159,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:!p-0 cursor-default h-auto"
+              disabled
             >
-              <Link
-                href="/dashboard"
-                className="relative h-32 w-28 overflow-hidden flex items-center justify-center"
-              >
-                <Image src="/logo.png" alt="Logo" width={200} height={200} />
-              </Link>
+              <div className="relative w-full flex items-center justify-center pt-6 pb-4">
+                <Image 
+                  src="/logo.png" 
+                  alt="Logo" 
+                  width={240} 
+                  height={240} 
+                  className="object-contain w-full h-auto max-h-48 opacity-100" 
+                />
+              </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

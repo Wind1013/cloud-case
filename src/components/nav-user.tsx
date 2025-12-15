@@ -27,13 +27,18 @@ import {
 import { useSession, signOut } from "@/lib/auth-client";
 import { Skeleton } from "./ui/skeleton";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useCallback } from "react";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { data, isPending } = useSession();
   const router = useRouter();
+  const hasLoggedOut = useRef(false);
 
-  const logOut = async () => {
+  const logOut = useCallback(async () => {
+    if (hasLoggedOut.current) return;
+    hasLoggedOut.current = true;
+    
     await signOut({
       fetchOptions: {
         onSuccess: () => {
@@ -45,15 +50,20 @@ export function NavUser() {
         },
       },
     });
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (!isPending && !data && !hasLoggedOut.current) {
+      logOut();
+    }
+  }, [isPending, data, logOut]);
 
   if (isPending) {
     return <Skeleton className="w-full h-12" />;
   }
 
   if (!data) {
-    logOut();
-    return;
+    return <Skeleton className="w-full h-12" />;
   }
 
   const { user } = data;

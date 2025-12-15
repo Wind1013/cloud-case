@@ -1,0 +1,30 @@
+# Copy this file to .env and fill in your actual values
+
+# Database Configuration
+DATABASE_URL="mysql://user:password@localhost:3306/cloudcase"
+
+# AWS S3 / Tigris Configuration
+# For Tigris: Get credentials from https://www.tigris.dev/
+# For AWS S3: Get credentials from AWS IAM
+# For MinIO (local): Use minioadmin/minioadmin
+AWS_ACCESS_KEY_ID=your_access_key_id_here
+AWS_SECRET_ACCESS_KEY=your_secret_access_key_here
+S3_BUCKET_NAME=your_bucket_name_here
+AWS_ENDPOINT_URL_S3=https://fly.storage.tigris.dev
+# Optional: AWS_REGION=us-east-1
+
+# Gmail SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password-here
+SMTP_FROM=your-email@gmail.com
+
+# Zoom Configuration
+ZOOM_ACCOUNT_ID=your_zoom_account_id
+ZOOM_CLIENT_ID=your_zoom_client_id
+ZOOM_CLIENT_SECRET=your_zoom_client_secret
+
+# Next.js Configuration
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+

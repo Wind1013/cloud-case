@@ -41,7 +41,7 @@ export default function CustomModal({
   const [localOpen, setLocalOpen] = useState(defaultOpen);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const contentClassName = clsx("overflow-auto rounded-md bg-card", contentClass);
+  const contentClassName = clsx("overflow-auto rounded-md bg-card max-w-sm w-full", contentClass);
 
   // Narrow dependency: only react to isOpen for this specific modal.
   useEffect(() => {
@@ -62,7 +62,7 @@ export default function CustomModal({
     } else {
       setLocalOpen(open);
       if (!open) {
-        setTimeout(() => setClose(id), 300);
+        setClose(id);
       } else {
         // IMPORTANT: Ensure you pass a valid modal element when opening.
         setOpen(
@@ -103,7 +103,7 @@ export default function CustomModal({
     // Force the modal to be closable by updating canClose.
     setCanClose(id, true);
     setLocalOpen(false);
-    setTimeout(() => setClose(id), 300);
+    setClose(id);
   }
 
   return (
@@ -125,18 +125,18 @@ export default function CustomModal({
         <AnimatePresence>
           {localOpen && (
             <motion.div
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.1 }}
               className="fixed inset-0 z-50 flex items-center justify-center bg-background/10 backdrop-blur-sm bg-opacity-50"
               onClick={() => handleOpenChange(false)}>
               <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
+                initial={{ scale: 1, opacity: 1 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className={clsx("relative p-1 md:p-6 outline-none rounded-xl shadow-xl", contentClassName)}
+                transition={{ duration: 0.1 }}
+                className={clsx("relative p-1 md:p-4 outline-none rounded-xl shadow-xl max-w-sm w-full", contentClassName)}
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={handleKeyDown}
                 ref={contentRef}
@@ -144,7 +144,7 @@ export default function CustomModal({
                 <button className="absolute top-2 right-2 p-1 rounded-full transition-colors" onClick={() => handleOpenChange(false)}>
                   <X className="h-4 w-4" />
                 </button>
-                {title && <h2 className="text-2xl tracking-tighter font-semibold mb-4">{title}</h2>}
+                {title && <h2 className="text-xl tracking-tighter font-semibold mb-3">{title}</h2>}
                 {subheading && <p className="text-muted-foreground mb-4">{subheading}</p>}
                 <div className="pt-[0.5em] flex flex-col flex-grow">{children}</div>
               </motion.div>
@@ -155,7 +155,7 @@ export default function CustomModal({
         <Dialog open={localOpen} onOpenChange={handleOpenChange}>
           <DialogContent className={contentClassName}>
             <DialogHeader className="py-2 text-left">
-              <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+              <DialogTitle className="text-xl font-bold">{title}</DialogTitle>
               {subheading && <DialogDescription>{subheading}</DialogDescription>}
               <div className="pt-[0.5em] flex flex-col flex-grow">{children}</div>
             </DialogHeader>

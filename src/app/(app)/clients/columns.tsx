@@ -1,5 +1,4 @@
 "use client";
-import { DeleteClientDialog } from "@/components/delete-client-dialog";
 import { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -79,12 +78,6 @@ export const columns: ColumnDef<User>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(client.id)}
-            >
-              Copy client ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             {client.isArchived ? (
               <DropdownMenuItem onClick={() => onUnarchive(client.id)}>
                 Unarchive
@@ -94,7 +87,6 @@ export const columns: ColumnDef<User>[] = [
                 Archive
               </DropdownMenuItem>
             )}
-            <DeleteClientDialog clientId={client.id} />
           </DropdownMenuContent>
         </DropdownMenu>
       );
@@ -138,9 +130,19 @@ export const archivedColumns: ColumnDef<User>[] = [
       const client = row.original;
 
       return (
-        <Button onClick={() => onUnarchive(client.id)} variant="outline">
-          Unarchive
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => onUnarchive(client.id)}>
+              Unarchive
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },

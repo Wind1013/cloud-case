@@ -3,7 +3,7 @@
 import { EventFormData } from "@/types";
 import React, { useEffect, useState } from "react";
 import { UseFormSetValue } from "react-hook-form";
-import { format, setHours, setMinutes, isBefore, addHours } from "date-fns";
+import { format, setHours, setMinutes, isBefore, addHours, startOfToday } from "date-fns";
 
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
@@ -90,11 +90,11 @@ export default function SelectDate({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Start Date Picker */}
-        <div className="space-y-2">
-          <Label htmlFor="startDate">Start Date</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="startDate" className="text-sm">Start Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -126,6 +126,7 @@ export default function SelectDate({
                     setStartDate(newDate);
                   }
                 }}
+                disabled={(date) => isBefore(date, startOfToday())}
                 initialFocus
               />
             </PopoverContent>
@@ -133,8 +134,8 @@ export default function SelectDate({
         </div>
 
         {/* End Date Picker */}
-        <div className="space-y-2">
-          <Label htmlFor="endDate">End Date</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="endDate" className="text-sm">End Date</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -166,6 +167,7 @@ export default function SelectDate({
                     setEndDate(newDate);
                   }
                 }}
+                disabled={(date) => isBefore(date, startOfToday())}
                 initialFocus
               />
             </PopoverContent>
@@ -173,10 +175,10 @@ export default function SelectDate({
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3">
         {/* Start Time */}
-        <div className="space-y-2">
-          <Label>Start Time</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm">Start Time</Label>
           <div className="flex space-x-2">
             <Select
               value={get12HourFormat(startDate.getHours()).toString()}
@@ -245,8 +247,8 @@ export default function SelectDate({
         </div>
 
         {/* End Time */}
-        <div className="space-y-2">
-          <Label>End Time</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm">End Time</Label>
           <div className="flex space-x-2">
             <Select
               value={get12HourFormat(endDate.getHours()).toString()}

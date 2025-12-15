@@ -3,20 +3,36 @@ import { useModal } from "@/providers/modal-context";
 import { AppointmentEvent } from "@/types";
 import React, { useEffect, useState } from "react";
 import { CalendarIcon } from "lucide-react";
+import { Case } from "@/generated/prisma";
 
 export default function ShowMoreEventsModal() {
   const { data } = useModal();
-  console.log(data);
+  // Access data from the default modal (modalId defaults to "default")
+  const modalData = data?.default || (data && Object.keys(data).length > 0 ? data[Object.keys(data)[0]] : null);
+  
+  console.log("Modal data:", data);
+  console.log("Modal data (default):", modalData);
+  console.log("Day events:", modalData?.dayEvents);
+  
   const dayEvents = React.useMemo(
-    () => data?.dayEvents || [],
-    [data?.dayEvents]
+    () => {
+      const events = modalData?.dayEvents;
+      if (Array.isArray(events) && events.length > 0) {
+        return events;
+      }
+      return [];
+    },
+    [modalData?.dayEvents]
   );
-  const clients = data?.clients || [];
+  const clients = modalData?.clients || [];
+  const cases = modalData?.cases || [];
 
   const [events, setEvents] = useState<AppointmentEvent[]>(dayEvents);
 
   useEffect(() => {
-    setEvents(dayEvents);
+    if (dayEvents && dayEvents.length > 0) {
+      setEvents(dayEvents);
+    }
   }, [dayEvents]);
 
   return (
@@ -25,6 +41,7 @@ export default function ShowMoreEventsModal() {
         events.map((event: AppointmentEvent) => (
           <EventStyled
             clients={clients}
+            cases={cases}
             onDelete={id => {
               setEvents(events.filter(event => event.id !== id));
             }}

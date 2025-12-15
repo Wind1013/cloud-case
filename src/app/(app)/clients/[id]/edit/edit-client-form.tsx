@@ -6,7 +6,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { User } from "@/generated/prisma";
 import { format } from "date-fns";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumberSync } from "@/lib/phone-validation";
 import {
   Calendar as CalendarIcon,
   User as UserIcon,
@@ -44,7 +44,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PhoneInputSimple as PhoneInput } from "@/components/ui/phone-input-simple";
 
 const editClientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -57,7 +57,7 @@ const editClientSchema = z.object({
   phone: z
     .string()
     .refine(
-      (value) => isValidPhoneNumber(value, "PH"),
+      (value) => isValidPhoneNumberSync(value, "PH"),
       "Please enter a valid Philippine phone number"
     )
     .optional(),

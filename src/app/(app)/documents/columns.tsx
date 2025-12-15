@@ -1,18 +1,25 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, MoreHorizontal } from "lucide-react";
+import {
+  ArrowUpDown,
+  MoreHorizontal,
+  Archive,
+  ArchiveRestore,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { Document as PrismaDocument, Case } from "@/generated/prisma";
+import { archiveDocument, unarchiveDocument } from "@/actions/document";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type Document = PrismaDocument & {
   case: Case;
@@ -44,7 +51,7 @@ function formatDocumentType(mimeType: string): string {
   }
 }
 
-export const columns: ColumnDef<Document>[] = [
+export const createColumns = (isArchived: boolean = false): ColumnDef<Document>[] => [
   {
     accessorKey: "name",
     header: ({ column }) => {
@@ -95,29 +102,67 @@ export const columns: ColumnDef<Document>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const document = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Link href={document.signedUrl || document.url} target="_blank">
-                View Document
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <Link href={`/cases/${document.caseId}`}>View Case</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+      return <DocumentActions document={row.original} isArchived={isArchived} />;
     },
   },
 ];
+
+// Component for document actions
+function DocumentActions({ document, isArchived }: { document: Document; isArchived: boolean }) {
+  const router = useRouter();
+
+  const handleArchive = async () => {
+    const result = await archiveDocument(document.id);
+    if (result.success) {
+      toast.success("Document archived successfully");
+      router.refresh();
+    } else {
+      toast.error(result.error || "Failed to archive document");
+    }
+  };
+
+  const handleUnarchive = async () => {
+    const result = await unarchiveDocument(document.id);
+    if (result.success) {
+      toast.success("Document unarchived successfully");
+      router.refresh();
+    } else {
+      toast.error(result.error || "Failed to unarchive document");
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {!isArchived ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={`/cases/${document.caseId}`}>View Case</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleArchive}>
+              <Archive className="mr-2 h-4 w-4" />
+              Archive
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem onClick={handleUnarchive}>
+              <ArchiveRestore className="mr-2 h-4 w-4" />
+              Unarchive
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// Export default columns for backward compatibility
+export const columns = createColumns(false);

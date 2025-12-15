@@ -1,6 +1,6 @@
 "use client";
 
-import { User } from "@/generated/prisma";
+import { User, Case } from "@/generated/prisma";
 import React, { useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,15 @@ import { AppointmentEvent, CustomEventModal } from "@/types";
 import CustomModal from "@/components/ui/custom-modal";
 
 import { easeInOut } from "framer-motion";
+
+// Helper function to check if a date is in the past
+const isPastDate = (date: Date): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const compareDate = new Date(date);
+  compareDate.setHours(0, 0, 0, 0);
+  return compareDate < today;
+};
 
 const pageTransitionVariants = {
   enter: (direction: number) => ({
@@ -41,6 +50,7 @@ export default function MonthView({
   CustomEventModal,
   classNames,
   clients,
+  cases,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
@@ -48,6 +58,7 @@ export default function MonthView({
   CustomEventModal?: CustomEventModal;
   classNames?: { prev?: string; next?: string; addEvent?: string };
   clients: User[];
+  cases: Case[];
 }) {
   const { getters, weekStartsOn } = useScheduler();
   const { setOpen } = useModal();
@@ -91,6 +102,12 @@ export default function MonthView({
       0
     );
 
+    // Prevent creating appointments on past dates
+    if (isPastDate(startDate)) {
+      console.warn("Cannot create appointment on a past date");
+      return;
+    }
+
     // Create end date at 11:59 PM on the same day
     const endDate = new Date(
       currentDate.getFullYear(),
@@ -102,9 +119,10 @@ export default function MonthView({
     );
 
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Add Cases">
         <AddEventModal
           clients={clients}
+          cases={cases}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -131,6 +149,7 @@ export default function MonthView({
         return {
           dayEvents,
           clients,
+          cases,
         };
       }
     );
@@ -257,6 +276,12 @@ export default function MonthView({
 
           {daysInMonth.map(dayObj => {
             const dayEvents = getters.getEventsForDay(dayObj.day, currentDate);
+            const dayDate = new Date(
+              currentDate.getFullYear(),
+              currentDate.getMonth(),
+              dayObj.day
+            );
+            const isPast = isPastDate(dayDate);
 
             return (
               <motion.div
@@ -268,16 +293,28 @@ export default function MonthView({
                 exit="exit"
               >
                 <Card
-                  className="shadow-md cursor-pointer overflow-hidden relative flex p-4 border h-full"
-                  onClick={() => handleAddEvent(dayObj.day)}
+                  className={clsx(
+                    "shadow-md overflow-hidden relative flex p-4 border h-full",
+                    isPast
+                      ? "cursor-not-allowed opacity-60 bg-red-50/50"
+                      : "cursor-pointer"
+                  )}
+                  onClick={() => {
+                    if (!isPast) {
+                      handleAddEvent(dayObj.day);
+                    }
+                  }}
                 >
                   <div
                     className={clsx(
                       "font-semibold relative text-3xl mb-1",
-                      dayEvents.length > 0
+                      isPast
+                        ? "text-red-500"
+                        : dayEvents.length > 0
                         ? "text-primary-600"
                         : "text-muted-foreground",
-                      new Date().getDate() === dayObj.day &&
+                      !isPast &&
+                        new Date().getDate() === dayObj.day &&
                         new Date().getMonth() === currentDate.getMonth() &&
                         new Date().getFullYear() === currentDate.getFullYear()
                         ? "text-secondary-500"
@@ -298,6 +335,7 @@ export default function MonthView({
                         >
                           <EventStyled
                             clients={clients}
+                            cases={cases}
                             event={{
                               ...dayEvents[0],
                               CustomEventComponent,
@@ -315,7 +353,7 @@ export default function MonthView({
                           handleShowMoreEvents(dayEvents);
                         }}
                         variant="outline"
-                        className="hover:bg-default-200 absolute right-2 text-xs top-2 transition duration-300"
+                        className="hover:bg-default-200 absolute right-2 text-xs top-2 transition duration-300 cursor-pointer"
                       >
                         {dayEvents.length > 1
                           ? `+${dayEvents.length - 1}`
@@ -325,10 +363,17 @@ export default function MonthView({
                   </div>
 
                   {/* Hover Text */}
-                  {dayEvents.length === 0 && (
+                  {dayEvents.length === 0 && !isPast && (
                     <div className="absolute inset-0 bg-primary/20 bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <span className="text-black tracking-tighter text-lg font-semibold">
-                        Add Event
+                        Add Cases
+                      </span>
+                    </div>
+                  )}
+                  {isPast && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-red-500 text-xs font-medium opacity-70">
+                        Past Date
                       </span>
                     </div>
                   )}

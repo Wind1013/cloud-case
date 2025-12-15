@@ -5,15 +5,17 @@ import { deleteAppointment } from "@/actions/appointment";
 import SchedulerWrapper from "@/components/schedule/_components/wrapper/schedular-wrapper";
 import { SchedulerProvider } from "@/providers/schedular-provider";
 import { AppointmentEvent } from "@/types";
-import { User } from "@/generated/prisma";
+import { User, Case } from "@/generated/prisma";
 import { toast } from "sonner";
 
 const AppointmentClient = ({
   appointments,
   clients,
+  cases,
 }: {
   appointments: AppointmentEvent[];
   clients: User[];
+  cases: Case[];
 }) => {
   const [isPending, startTransition] = useTransition();
 
@@ -35,7 +37,7 @@ const AppointmentClient = ({
         initialState={appointments}
         onDeleteEvent={handleDeleteAppointment}
       >
-        <SchedulerWrapper clients={clients} />
+        <SchedulerWrapper clients={clients} cases={cases} />
       </SchedulerProvider>
     </div>
   );

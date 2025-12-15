@@ -49,13 +49,42 @@ export default function TemplateEditor({ template }: { template?: Template }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name || !content) {
-      alert("Please fill in all fields");
+    if (!name || !name.trim()) {
+      alert("Please enter a template name");
+      return;
+    }
+
+    if (!content || !content.trim()) {
+      alert("Please add content to the template");
+      return;
+    }
+
+    // Check if content is valid JSON (Lexical editor state)
+    try {
+      const parsed = JSON.parse(content);
+      // Check if the editor state has actual content (not just empty paragraphs)
+      if (parsed?.root?.children) {
+        const hasContent = parsed.root.children.some((child: any) => {
+          if (child.type === "paragraph" && child.children) {
+            return child.children.some((textNode: any) => 
+              textNode.text && textNode.text.trim()
+            );
+          }
+          return child.text && child.text.trim();
+        });
+        if (!hasContent) {
+          alert("Please add some content to the template");
+          return;
+        }
+      }
+    } catch (jsonError) {
+      alert("Invalid content format. Please try refreshing the page.");
+      console.error("Invalid JSON content:", jsonError);
       return;
     }
 
     const data = {
-      name,
+      name: name.trim(),
       content,
       marginTop,
       marginRight,
@@ -65,15 +94,39 @@ export default function TemplateEditor({ template }: { template?: Template }) {
 
     startTransition(async () => {
       try {
+        console.log("Submitting template data:", { 
+          name: data.name, 
+          hasContent: !!data.content,
+          contentLength: data.content?.length 
+        });
+        
         if (template) {
-          await updateTemplate(template.id, data);
-          router.push(`/legal-forms/${template.id}`);
+          const result = await updateTemplate(template.id, data);
+          console.log("Update result:", result);
+          if (result?.error) {
+            alert(`Failed to update template: ${result.error}`);
+            return;
+          }
+          if (result?.success) {
+            router.push(`/legal-forms/${template.id}`);
+          }
         } else {
-          await createTemplate(data);
-          router.push("/legal-forms");
+          const result = await createTemplate(data);
+          console.log("Create result:", result);
+          if (result?.error) {
+            alert(`Failed to create template: ${result.error}`);
+            return;
+          }
+          if (result?.success) {
+            router.push("/legal-forms");
+          } else {
+            alert("Failed to create template: Unknown error");
+          }
         }
       } catch (error) {
-        alert(`Failed to ${template ? "update" : "create"} template`);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        console.error("Template submission error:", error);
+        alert(`Failed to ${template ? "update" : "create"} template: ${errorMessage}`);
       }
     });
   };

@@ -184,6 +184,7 @@ export async function getNewClientsCount() {
     const count = await prisma.user.count({
       where: {
         role: UserRole.CLIENT,
+        isArchived: false, // Only count active clients, exclude archived
         createdAt: {
           gte: thirtyDaysAgo,
         },

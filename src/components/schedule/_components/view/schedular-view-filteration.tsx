@@ -10,13 +10,12 @@ import { Calendar as CalendarIcon, CalendarDaysIcon } from "lucide-react";
 import AddEventModal from "../../_modals/add-event-modal";
 import DailyView from "./day/daily-view";
 import MonthView from "./month/month-view";
-import WeeklyView from "./week/week-view";
 import { useModal } from "@/providers/modal-context";
 import { ClassNames, CustomComponents, Views } from "@/types/index";
 import { cn } from "@/lib/utils";
 import CustomModal from "@/components/ui/custom-modal";
-import { IconCalendarMonth, IconCalendarWeek } from "@tabler/icons-react";
-import { User } from "@/generated/prisma";
+import { IconCalendarMonth } from "@tabler/icons-react";
+import { User, Case } from "@/generated/prisma";
 
 // Animation settings for Framer Motion
 const animationConfig = {
@@ -28,22 +27,24 @@ const animationConfig = {
 
 export default function SchedulerViewFilteration({
   views = {
-    views: ["day", "week", "month"],
+    views: ["day", "month"],
     mobileViews: ["day"],
   },
   stopDayEventSummary = false,
   CustomComponents,
   classNames,
   clients,
+  cases,
 }: {
   views?: Views;
   stopDayEventSummary?: boolean;
   CustomComponents?: CustomComponents;
   classNames?: ClassNames;
   clients: User[];
+  cases: Case[];
 }) {
   const { setOpen } = useModal();
-  const [activeView, setActiveView] = useState<string>("week");
+  const [activeView, setActiveView] = useState<string>("month");
   const [clientSide, setClientSide] = useState(false);
 
   console.log("activeView", activeView);
@@ -77,9 +78,10 @@ export default function SchedulerViewFilteration({
   function handleAddEvent(selectedDay?: number) {
     // Open the modal with the content
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Add Cases">
         <AddEventModal
           clients={clients}
+          cases={cases}
           CustomAddEventModal={
             CustomComponents?.CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -102,22 +104,9 @@ export default function SchedulerViewFilteration({
     <div className="flex w-full flex-col">
       <div className="flex w-full">
         <div className="dayly-weekly-monthly-selection relative w-full">
-          <Tabs className={cn("w-full", classNames?.tabs)} defaultValue="week">
+          <Tabs className={cn("w-full", classNames?.tabs)} defaultValue="month">
             <div className="flex justify-between items-center mb-4">
-              <TabsList className="grid grid-cols-2">
-                {viewsSelector?.includes("week") && (
-                  <TabsTrigger value="week">
-                    {CustomComponents?.customTabs?.CustomWeekTab ? (
-                      CustomComponents.customTabs.CustomWeekTab
-                    ) : (
-                      <div className="flex items-center space-x-2">
-                        <IconCalendarWeek />
-                        <span>Week</span>
-                      </div>
-                    )}
-                  </TabsTrigger>
-                )}
-
+              <TabsList>
                 {viewsSelector?.includes("month") && (
                   <TabsTrigger value="month">
                     {CustomComponents?.customTabs?.CustomMonthTab ? (
@@ -149,7 +138,7 @@ export default function SchedulerViewFilteration({
                 </div>
               </div>
 
-              {/* Add Event Button */}
+              {/* Add Cases Button */}
               {CustomComponents?.customButtons?.CustomAddEventButton ? (
                 <div onClick={() => handleAddEvent()}>
                   {CustomComponents?.customButtons.CustomAddEventButton}
@@ -161,33 +150,10 @@ export default function SchedulerViewFilteration({
                   variant="default"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  Add Event
+                  Add Cases
                 </Button>
               )}
             </div>
-
-            {viewsSelector?.includes("week") && (
-              <TabsContent value="week">
-                <AnimatePresence mode="wait">
-                  <motion.div {...animationConfig}>
-                    <WeeklyView
-                      clients={clients}
-                      classNames={classNames?.buttons}
-                      prevButton={
-                        CustomComponents?.customButtons?.CustomPrevButton
-                      }
-                      nextButton={
-                        CustomComponents?.customButtons?.CustomNextButton
-                      }
-                      CustomEventComponent={
-                        CustomComponents?.CustomEventComponent
-                      }
-                      CustomEventModal={CustomComponents?.CustomEventModal}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </TabsContent>
-            )}
 
             {viewsSelector?.includes("month") && (
               <TabsContent value="month">
@@ -195,6 +161,7 @@ export default function SchedulerViewFilteration({
                   <motion.div {...animationConfig}>
                     <MonthView
                       clients={clients}
+                      cases={cases}
                       classNames={classNames?.buttons}
                       prevButton={
                         CustomComponents?.customButtons?.CustomPrevButton

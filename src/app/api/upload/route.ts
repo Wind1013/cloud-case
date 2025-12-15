@@ -44,6 +44,9 @@ const router: Router = {
           throw new RejectUpload("Not logged in!");
         }
 
+        // Note: We no longer delete existing documents - new files will be added alongside existing ones
+        console.log(`Uploading new files for case ${caseId} (existing files will be preserved)...`);
+
         return {
           generateObjectInfo: ({ file }) => ({
             key: `${caseId}/${file.name}`,
@@ -53,6 +56,9 @@ const router: Router = {
       },
       onAfterSignedUrl: async ({ files, clientMetadata }) => {
         const { caseId } = clientMetadata;
+        console.log(`Creating ${files.length} new document(s) for case ${caseId}...`);
+        
+        try {
         const promises = files.map(file =>
           createDocument({
             caseId: caseId,
@@ -63,6 +69,11 @@ const router: Router = {
           })
         );
         await Promise.all(promises);
+          console.log(`Successfully created ${files.length} document(s) for case ${caseId}`);
+        } catch (error) {
+          console.error("Error creating documents:", error);
+          throw error;
+        }
       },
     }),
   },

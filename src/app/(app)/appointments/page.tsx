@@ -1,12 +1,14 @@
 import { getAppointments } from "@/actions/appointment";
 import AppointmentClient from "./client";
 import { AppointmentEvent } from "@/types";
-import { AppointmentVariant, User } from "@/generated/prisma";
+import { AppointmentVariant, User, Case } from "@/generated/prisma";
 import { getUsers } from "@/data/users";
+import { getCases } from "@/data/cases";
 
 const AppointmentPage = async () => {
   const { data: appointments } = await getAppointments();
-  const clients = await getUsers({ role: "CLIENT" });
+  const { data: clients } = await getUsers({ role: "CLIENT", limit: 1000 });
+  const { data: cases } = await getCases({});
 
   const mappedAppointments: AppointmentEvent[] = appointments
     ? appointments.map(appointment => ({
@@ -26,7 +28,8 @@ const AppointmentPage = async () => {
   return (
     <AppointmentClient
       appointments={mappedAppointments}
-      clients={clients as User[]}
+      clients={clients}
+      cases={(cases || []) as Case[]}
     />
   );
 };

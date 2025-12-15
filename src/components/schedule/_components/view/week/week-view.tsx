@@ -1,4 +1,4 @@
-import { User } from "@/generated/prisma";
+import { User, Case } from "@/generated/prisma";
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,15 @@ const hours = Array.from({ length: 24 }, (_, i) => {
   const ampm = i < 12 ? "AM" : "PM";
   return `${hour}:00 ${ampm}`;
 });
+
+// Helper function to check if a date is in the past
+const isPastDate = (date: Date): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const compareDate = new Date(date);
+  compareDate.setHours(0, 0, 0, 0);
+  return compareDate < today;
+};
 
 // Animation Variants
 const containerVariants = {
@@ -56,6 +65,7 @@ export default function WeeklyView({
   CustomEventModal,
   classNames,
   clients,
+  cases,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
@@ -63,6 +73,7 @@ export default function WeeklyView({
   CustomEventModal?: CustomEventModal;
   classNames?: { prev?: string; next?: string; addEvent?: string };
   clients: User[];
+  cases: Case[];
 }) {
   const { getters, handlers } = useScheduler();
   const hoursColumnRef = useRef<HTMLDivElement>(null);
@@ -113,9 +124,10 @@ export default function WeeklyView({
     const endDate = event?.endDate || new Date();
 
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Add Cases">
         <AddEventModal
           clients={clients}
+          cases={cases}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -176,6 +188,12 @@ export default function WeeklyView({
       hours,
       minutes
     );
+
+    // Prevent creating appointments on past dates
+    if (isPastDate(date)) {
+      console.warn("Cannot create appointment on a past date");
+      return;
+    }
 
     handleAddEvent({
       startDate: date,
@@ -303,10 +321,10 @@ export default function WeeklyView({
           className="use-automation-zoom-in"
         >
           <div className="grid grid-cols-8 gap-0">
-            {/* Week Number Header - Sticky */}
+            {/* Month Header - Sticky */}
             <div className="sticky top-0 left-0 z-30 bg-default-100 rounded-tl-lg h-[83px] border-0 flex items-center justify-center bg-primary-200">
-              <span className="text-xl tracking-tight font-semibold ">
-                Week {getters.getWeekNumber(currentDate)}
+              <span className="text-xl tracking-tight font-semibold">
+                {currentDate.toLocaleString("default", { month: "long" })}
               </span>
             </div>
 
@@ -331,11 +349,13 @@ export default function WeeklyView({
                         <div
                           className={clsx(
                             "text-lg font-semibold",
-                            new Date().getDate() === day.getDate() &&
-                              new Date().getMonth() ===
-                                currentDate.getMonth() &&
-                              new Date().getFullYear() ===
-                                currentDate.getFullYear()
+                            isPastDate(day)
+                              ? "text-red-500"
+                              : new Date().getDate() === day.getDate() &&
+                                new Date().getMonth() ===
+                                  currentDate.getMonth() &&
+                                new Date().getFullYear() ===
+                                  currentDate.getFullYear()
                               ? "text-secondary-500"
                               : ""
                           )}
@@ -344,8 +364,17 @@ export default function WeeklyView({
                         </div>
 
                         <div
-                          className="absolute top-5 right-10 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                          className={clsx(
+                            "absolute top-5 right-10 transition-opacity",
+                            isPastDate(day)
+                              ? "cursor-not-allowed opacity-30"
+                              : "cursor-pointer opacity-0 group-hover:opacity-100"
+                          )}
                           onClick={e => {
+                            if (isPastDate(day)) {
+                              e.stopPropagation();
+                              return;
+                            }
                             e.stopPropagation();
 
                             const selectedDay = new Date(
@@ -460,6 +489,7 @@ export default function WeeklyView({
                                                 >
                                                   <EventStyled
                                                     clients={clients}
+                                                    cases={cases}
                                                     event={{
                                                       ...event,
                                                       CustomEventComponent,
@@ -488,6 +518,7 @@ export default function WeeklyView({
                                             >
                                               <EventStyled
                                                 clients={clients}
+                                                cases={cases}
                                                 event={{
                                                   ...event,
                                                   CustomEventComponent,
@@ -505,18 +536,25 @@ export default function WeeklyView({
                                   ) : (
                                     <div className="text-center py-10 text-muted-foreground">
                                       <p>No events scheduled for this day</p>
-                                      <Button
-                                        variant="outline"
-                                        className="mt-4"
-                                        onClick={() => {
-                                          handleAddEventWeek(
-                                            idx,
-                                            detailedHour || "12:00 PM"
-                                          );
-                                        }}
-                                      >
-                                        Add Event
-                                      </Button>
+                                      {!isPastDate(day) && (
+                                        <Button
+                                          variant="outline"
+                                          className="mt-4"
+                                          onClick={() => {
+                                            handleAddEventWeek(
+                                              idx,
+                                              detailedHour || "12:00 PM"
+                                            );
+                                          }}
+                                        >
+                                          Add Cases
+                                        </Button>
+                                      )}
+                                      {isPastDate(day) && (
+                                        <p className="mt-4 text-sm text-red-500">
+                                          Cannot add appointments to past dates
+                                        </p>
+                                      )}
                                     </div>
                                   )}
                                 </div>
@@ -594,11 +632,18 @@ export default function WeeklyView({
                     ? dayEvents?.slice(0, maxEventsToShow - 1)
                     : dayEvents;
 
+                  const dayDate = daysOfWeek[dayIndex % 7];
+                  const isPast = isPastDate(dayDate);
+
                   return (
                     <div
                       key={`day-${dayIndex}`}
-                      className="col-span-1 border-default-200 z-20 relative transition duration-300 cursor-pointer border-r border-b text-center text-sm text-muted-foreground overflow-hidden"
+                      className={clsx(
+                        "col-span-1 border-default-200 z-20 relative transition duration-300 border-r border-b text-center text-sm text-muted-foreground overflow-hidden",
+                        isPast ? "cursor-not-allowed opacity-50 bg-red-50" : "cursor-pointer"
+                      )}
                       onClick={() => {
+                        if (isPast) return;
                         handleAddEventWeek(dayIndex, detailedHour as string);
                       }}
                     >
@@ -651,13 +696,14 @@ export default function WeeklyView({
                               transition={{ duration: 0.2 }}
                             >
                               <EventStyled
+                                clients={clients}
+                                cases={cases}
                                 event={{
                                   ...event,
                                   CustomEventComponent,
                                   minmized: true,
                                 }}
                                 CustomEventModal={CustomEventModal}
-                                clients={clients}
                               />
                             </motion.div>
                           );
@@ -691,13 +737,14 @@ export default function WeeklyView({
                                       {dayEvents?.map(event => (
                                         <EventStyled
                                           key={event.id}
+                                          clients={clients}
+                                          cases={cases}
                                           event={{
                                             ...event,
                                             CustomEventComponent,
                                             minmized: false,
                                           }}
                                           CustomEventModal={CustomEventModal}
-                                          clients={clients}
                                         />
                                       ))}
                                     </div>
@@ -717,7 +764,7 @@ export default function WeeklyView({
                           className="col-span-1 border-default-200 h-[64px] relative transition duration-300 cursor-pointer border-r border-b text-center text-sm text-muted-foreground"
                         >
                           <div className="absolute bg-accent z-40 flex items-center justify-center text-xs opacity-0 transition duration-250 hover:opacity-100 w-full h-full">
-                            Add Event
+                            Add Cases
                           </div>
                         </div>
                       ))}

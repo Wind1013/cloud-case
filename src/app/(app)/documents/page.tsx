@@ -3,9 +3,6 @@ import { getDocuments, getArchivedDocuments } from "@/data/documents";
 import { Suspense } from "react";
 import TableLoader from "../../../components/table-loader";
 import { Search } from "./search";
-import { DocumentDataTable } from "@/components/document-data-table";
-import { columns } from "./columns";
-import type { ColumnDef } from "@tanstack/react-table";
 import type { Document } from "@/generated/prisma";
 import { searchParamsCache } from "./searchParams";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,16 +15,17 @@ async function ActiveDocuments({
   const { query, page, limit } = await searchParamsCache.parse(searchParams);
   const { data: documents, total } = await getDocuments({ page, limit, query });
   const searchKey = `${query}-${page}-${limit}`;
+  const { DocumentTableWrapper } = await import("./DocumentTableWrapper");
 
   return (
     <Suspense key={searchKey} fallback={<TableLoader />}>
-      <DocumentDataTable<Document, unknown>
-        columns={columns as ColumnDef<Document, unknown>[]}
-        data={documents ?? []}
+      <DocumentTableWrapper
+        documents={documents ?? []}
         total={Number(total)}
         page={page}
         limit={limit}
         query={query}
+        isArchived={false}
       />
     </Suspense>
   );
@@ -45,16 +43,17 @@ async function ArchivedDocuments({
     query,
   });
   const searchKey = `${query}-${page}-${limit}`;
+  const { DocumentTableWrapper } = await import("./DocumentTableWrapper");
 
   return (
     <Suspense key={searchKey} fallback={<TableLoader />}>
-      <DocumentDataTable<Document, unknown>
-        columns={columns as ColumnDef<Document, unknown>[]}
-        data={documents ?? []}
+      <DocumentTableWrapper
+        documents={documents ?? []}
         total={Number(total)}
         page={page}
         limit={limit}
         query={query}
+        isArchived={true}
       />
     </Suspense>
   );

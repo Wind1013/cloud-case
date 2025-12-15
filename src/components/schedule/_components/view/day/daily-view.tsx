@@ -13,7 +13,7 @@ import { CustomEventModal, AppointmentEvent } from "@/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CustomModal from "@/components/ui/custom-modal";
-import { User } from "@/generated/prisma";
+import { User, Case } from "@/generated/prisma";
 
 // Generate hours in 12-hour format
 const hours = Array.from({ length: 24 }, (_, i) => {
@@ -159,6 +159,7 @@ export default function DailyView({
   stopDayEventSummary,
   classNames,
   clients,
+  cases,
 }: {
   prevButton?: React.ReactNode;
   nextButton?: React.ReactNode;
@@ -167,6 +168,7 @@ export default function DailyView({
   stopDayEventSummary?: boolean;
   classNames?: { prev?: string; next?: string; addEvent?: string };
   clients: User[];
+  cases: Case[];
 }) {
   const hoursColumnRef = useRef<HTMLDivElement>(null);
   const [detailedHour, setDetailedHour] = useState<string | null>(null);
@@ -221,9 +223,10 @@ export default function DailyView({
     // Open the modal with the content
 
     setOpen(
-      <CustomModal title="Add Event">
+      <CustomModal title="Add Cases">
         <AddEventModal
           clients={clients}
+          cases={cases}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -363,6 +366,7 @@ export default function DailyView({
                         >
                           <EventStyled
                             clients={clients}
+                            cases={cases}
                             event={{
                               ...event,
                               CustomEventComponent,
@@ -409,7 +413,7 @@ export default function DailyView({
                     className="cursor-pointer w-full relative border-b  hover:bg-default-200/50  transition duration-300  p-4 h-[64px] text-left text-sm text-muted-foreground border-default-200"
                   >
                     <div className="absolute bg-accent flex items-center justify-center text-xs opacity-0 transition left-0 top-0 duration-250 hover:opacity-100 w-full h-full">
-                      Add Event
+                      Add Cases
                     </div>
                   </div>
                 ))}
@@ -463,6 +467,7 @@ export default function DailyView({
                           >
                             <EventStyled
                               clients={clients}
+                              cases={cases}
                               event={{
                                 ...event,
                                 CustomEventComponent,

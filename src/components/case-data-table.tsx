@@ -12,6 +12,7 @@ import {
   IconPlus,
   IconScale,
   IconShieldLock,
+  IconSearch,
 } from "@tabler/icons-react";
 import {
   type ColumnDef,
@@ -57,10 +58,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChangeStatusModal } from "./change-status-modal";
 import StatusBadge from "./status-badge";
 import { ConfirmDialog } from "./confirm-dialog";
-import { archiveCase, deleteCase } from "@/actions/cases";
+import { archiveCase, deleteCase, unarchiveCase } from "@/actions/cases";
 import { toast } from "sonner";
 
 export const caseSchema = z.object({
@@ -85,9 +87,19 @@ export const caseSchema = z.object({
 
 export type CaseData = z.infer<typeof caseSchema>;
 
-export function CaseDataTable({ data }: { data: CaseData[] }) {
+export function CaseDataTable({ 
+  data, 
+  isArchived = false,
+  searchQuery,
+}: { 
+  data: CaseData[];
+  isArchived?: boolean;
+  searchQuery?: string;
+}) {
+  const router = useRouter();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isArchiveModalOpen, setIsArchiveModalOpen] = React.useState(false);
+  const [isUnarchiveModalOpen, setIsUnarchiveModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [selectedCase, setSelectedCase] = React.useState<CaseData | null>(null);
 
@@ -111,6 +123,16 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
     setIsArchiveModalOpen(false);
   };
 
+  const handleOpenUnarchiveModal = (caseData: CaseData) => {
+    setSelectedCase(caseData);
+    setIsUnarchiveModalOpen(true);
+  };
+
+  const handleCloseUnarchiveModal = () => {
+    setSelectedCase(null);
+    setIsUnarchiveModalOpen(false);
+  };
+
   const handleOpenDeleteModal = (caseData: CaseData) => {
     setSelectedCase(caseData);
     setIsDeleteModalOpen(true);
@@ -126,10 +148,24 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
       const result = await archiveCase(selectedCase.id);
       if (result.success) {
         toast.success("Case archived successfully");
+        router.refresh();
       } else {
         toast.error(result.error);
       }
       handleCloseArchiveModal();
+    }
+  };
+
+  const handleUnarchive = async () => {
+    if (selectedCase) {
+      const result = await unarchiveCase(selectedCase.id);
+      if (result.success) {
+        toast.success("Case unarchived successfully");
+        router.refresh();
+      } else {
+        toast.error(result.error);
+      }
+      handleCloseUnarchiveModal();
     }
   };
 
@@ -151,7 +187,12 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
       header: "Case Title",
       cell: ({ row }) => {
         return (
-          <Link href={`/cases/${row.original.id}`}>{row.original.title}</Link>
+          <Link 
+            href={`/cases/${row.original.id}`}
+            className="hover:text-blue-600 transition-colors"
+          >
+            {row.original.title}
+          </Link>
         );
       },
       enableHiding: false,
@@ -237,24 +278,37 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem asChild>
-              <Link href={`/cases/${row.original.id}/edit`}>Edit</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleOpenModal(row.original)}>
-              Change Status
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleOpenArchiveModal(row.original)}
-            >
-              Archive
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              onClick={() => handleOpenDeleteModal(row.original)}
-            >
-              Delete
-            </DropdownMenuItem>
+            {!isArchived && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href={`/cases/${row.original.id}/edit`}>Edit</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleOpenModal(row.original)}>
+                  Change Status
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleOpenArchiveModal(row.original)}
+                >
+                  Archive
+                </DropdownMenuItem>
+              </>
+            )}
+            {isArchived && (
+              <>
+                <DropdownMenuItem
+                  onClick={() => handleOpenUnarchiveModal(row.original)}
+                >
+                  Unarchive
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => handleOpenDeleteModal(row.original)}
+                >
+                  Delete
+                </DropdownMenuItem>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       ),
@@ -382,9 +436,33 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
-                    className="h-24 text-center"
+                    className="h-48"
                   >
-                    No cases found.
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      {searchQuery ? (
+                        <>
+                          <IconSearch className="h-12 w-12 text-muted-foreground mb-3" />
+                          <p className="text-lg font-semibold text-foreground mb-1">
+                            No cases found
+                          </p>
+                          <p className="text-sm text-muted-foreground max-w-md">
+                            No cases match your search for <span className="font-medium">"{searchQuery}"</span>. Try adjusting your search terms or filters.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <IconBriefcase className="h-12 w-12 text-muted-foreground mb-3" />
+                          <p className="text-lg font-semibold text-foreground mb-1">
+                            No {isArchived ? "archived " : ""}cases found
+                          </p>
+                          <p className="text-sm text-muted-foreground max-w-md">
+                            {isArchived 
+                              ? "You don't have any archived cases yet. Cases that are archived will appear here."
+                              : "Get started by creating your first case."}
+                          </p>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
@@ -404,6 +482,13 @@ export function CaseDataTable({ data }: { data: CaseData[] }) {
           onConfirm={handleArchive}
           title="Archive Case"
           description="Are you sure you want to archive this case?"
+        />
+        <ConfirmDialog
+          isOpen={isUnarchiveModalOpen}
+          onClose={handleCloseUnarchiveModal}
+          onConfirm={handleUnarchive}
+          title="Unarchive Case"
+          description="Are you sure you want to unarchive this case? It will be moved back to active cases with PRETRIAL status."
         />
         <ConfirmDialog
           isOpen={isDeleteModalOpen}

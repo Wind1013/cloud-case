@@ -1,7 +1,8 @@
 "use client";
 
 import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTransition, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +24,24 @@ export function NavMain({
   }[];
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  // Prefetch all routes on mount for instant navigation
+  useEffect(() => {
+    items.forEach(item => {
+      router.prefetch(item.url);
+    });
+    router.prefetch("/cases/new");
+  }, [router, items]);
+
+  const handleNavigation = (url: string) => {
+    setTimeout(() => {
+      startTransition(() => {
+        router.push(url);
+      });
+    }, 500);
+  };
 
   return (
     <SidebarGroup>
@@ -32,29 +51,28 @@ export function NavMain({
             <SidebarMenuButton
               tooltip="Quick Create"
               className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+              onClick={() => handleNavigation("/cases/new")}
             >
-              <Link href={"/cases/new"}>
-                <span className="flex items-center gap-2">
-                  <IconCirclePlusFilled />
-                  <span>Quick Filing</span>
-                </span>
-              </Link>
+              <span className="flex items-center gap-2">
+                <IconCirclePlusFilled />
+                <span>Quick Filing</span>
+              </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
         <SidebarMenu>
           {items.map(item => (
-            <Link href={item.url} key={item.title}>
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton
-                  tooltip={item.title}
-                  isActive={pathname.includes(item.url)}
-                >
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </Link>
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton
+                tooltip={item.title}
+                isActive={pathname.includes(item.url)}
+                onClick={() => handleNavigation(item.url)}
+                onMouseEnter={() => router.prefetch(item.url)}
+              >
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           ))}
         </SidebarMenu>
       </SidebarGroupContent>

@@ -1,11 +1,11 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumberSync } from "@/lib/phone-validation";
 import { Loader } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { signUp } from "@/lib/auth-client";
+import { PhoneInputSimple as PhoneInput } from "@/components/ui/phone-input-simple";
+import { signUp, sendVerificationEmail } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -33,9 +33,12 @@ const signUpSchema = z
     birthday: z.string().optional().default(""),
     phone: z
       .string()
+      .min(1, "Phone number is required")
       .refine(
-        value => isValidPhoneNumber(value, "PH"),
-        "Please enter a valid Philippine phone number"
+        value => isValidPhoneNumberSync(value, "PH"),
+        {
+          message: "Please enter a valid Philippine phone number (e.g., 09123456789 or +63 912 345 6789)"
+        }
       ),
     email: z.string().email("Please enter a valid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
@@ -74,6 +77,7 @@ export function SignUpForm({
 }: React.ComponentProps<"div">) {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
+  const lastValidPhoneRef = useRef<string>("");
 
   const {
     register,
@@ -99,34 +103,122 @@ export function SignUpForm({
 
   const phone = watch("phone");
 
+  // Update ref when phone value changes (from form)
+  useEffect(() => {
+    if (phone) {
+      lastValidPhoneRef.current = phone;
+    }
+  }, [phone]);
+
   async function onSubmit(data: SignUpFormData) {
     setServerError(null);
 
-    const userData = {
+    const userData: any = {
       name: `${data.firstName} ${data.lastName}`.trim(),
       email: data.email,
       password: data.password,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      middleName: data.middleName,
-      gender: data.gender,
-      birthday: data.birthday,
-      phone: data.phone,
+      firstName: data.firstName || undefined,
+      lastName: data.lastName || undefined,
+      middleName: data.middleName || undefined,
+      gender: data.gender || undefined,
+      phone: data.phone || undefined,
     };
 
+    // Only include birthday if it has a value
+    if (data.birthday) {
+      userData.birthday = new Date(data.birthday);
+    }
+    
+    // Remove undefined values to avoid issues with better-auth
+    Object.keys(userData).forEach(key => {
+      if (userData[key] === undefined || userData[key] === "") {
+        delete userData[key];
+      }
+    });
+
     try {
+      console.log("🚀 [SIGNUP] Starting signup process for:", userData.email);
+      console.log("🚀 [SIGNUP] User data:", { ...userData, password: "[HIDDEN]" });
+      
       const res = await signUp.email({
         ...userData,
         callbackURL: "/email-verified",
       });
 
+      console.log("🚀 [SIGNUP] Response received:", { 
+        hasError: !!res.error, 
+        hasData: !!res.data,
+        error: res.error 
+      });
+
       if (res.error) {
-        setServerError(res.error.message || "Something went wrong.");
+        console.error("❌ [SIGNUP] Error:", res.error);
+        console.error("❌ [SIGNUP] Full error object:", JSON.stringify(res.error, null, 2));
+        
+        // Show more detailed error message
+        let errorMessage = res.error.message || "Something went wrong.";
+        
+        // Check error code for specific cases
+        if (res.error.code === 'FAILED_TO_CREATE_USER') {
+          errorMessage = "Failed to create user account. Please check your information and try again.";
+        }
+        
+        // Check if it's a duplicate email error
+        const errorStr = JSON.stringify(res.error).toLowerCase();
+        if (errorStr.includes('email') && (errorStr.includes('unique') || errorStr.includes('duplicate'))) {
+          errorMessage = "This email is already registered. Please sign in instead.";
+        }
+        
+        setServerError(errorMessage);
       } else {
-        router.push("/dashboard");
+        console.log("✅ [SIGNUP] Signup successful, user created");
+        console.log("✅ [SIGNUP] User ID:", res.data?.user?.id);
+        console.log("✅ [SIGNUP] Email verified:", res.data?.user?.emailVerified);
+        console.log("ℹ️ [SIGNUP] NOTE: Check your server terminal for email sending logs (📧 📨 ✅ ❌)");
+        
+        // Better-auth should automatically send verification email when sendOnSignUp: true
+        // Wait a moment for it to process, then check if we need to manually send
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Only manually send if emailVerified is still false (meaning auto-send might have failed)
+        if (!res.data?.user?.emailVerified) {
+          try {
+            console.log("📧 [EMAIL] Auto-send may have failed, manually sending verification email to:", userData.email);
+            console.log("ℹ️ [EMAIL] This will call the server API - check terminal for server logs");
+            const emailRes = await sendVerificationEmail({ 
+              email: userData.email,
+              callbackURL: "/email-verified"
+            });
+            
+            console.log("📧 [EMAIL] Email response:", emailRes);
+            
+            if (emailRes?.error) {
+              console.error("❌ [EMAIL] Failed to send verification email:", emailRes.error);
+              toast.error("Account created but failed to send verification email. Please use 'Resend' button.");
+            } else {
+              console.log("✅ [EMAIL] Verification email sent successfully (client confirmation)");
+              toast.success("Account created! Please check your email for verification link.");
+            }
+          } catch (emailError: any) {
+            console.error("❌ [EMAIL] Exception sending verification email:");
+            console.error("   Error:", emailError);
+            console.error("   Message:", emailError?.message);
+            console.error("   Stack:", emailError?.stack);
+            toast.warning("Account created but verification email may not have been sent. Please use 'Resend' button.");
+          }
+        } else {
+          console.log("✅ [SIGNUP] User already verified, no need to send email");
+          toast.success("Account created successfully!");
+        }
+        
+        router.push("/email-verified");
       }
-    } catch (err) {
-      setServerError("An unexpected error occurred.");
+    } catch (err: any) {
+      console.error("❌ [SIGNUP] Exception:");
+      console.error("   Error:", err);
+      console.error("   Message:", err?.message);
+      console.error("   Stack:", err?.stack);
+      setServerError("An unexpected error occurred. Please try again.");
     }
   }
 
@@ -198,14 +290,61 @@ export function SignUpForm({
                   <Controller
                     name="phone"
                     control={control}
-                    render={({ field }) => (
-                      <PhoneInput
-                        value={field.value}
-                        onChange={field.onChange}
-                        defaultCountry="PH"
-                        international
-                      />
-                    )}
+                    render={({ field }) => {
+                      // Calculate max digits based on current or incoming value
+                      const getMaxDigits = (val: string): number => {
+                        if (!val) return 12; // Default for international
+                        const digits = val.replace(/\D/g, "");
+                        
+                        if (digits.startsWith("09")) return 11; // Local mobile: 09XX XXX XXXX
+                        if (digits.startsWith("639") || (digits.startsWith("63") && digits.length >= 3 && digits[2] === "9")) return 12; // International mobile: +63 9XX XXX XXXX (12 digits total)
+                        if (digits.startsWith("0") && /^0[2-8]/.test(digits)) return 10; // Local landline: 0X XXX XXXX
+                        if (digits.startsWith("63") && /^63[2-8]/.test(digits)) return 12; // International landline: +63 X XXX XXXX (12 digits total)
+                        if (val.startsWith("+63")) return 12; // Default for +63 (12 digits total)
+                        return 12; // Default
+                      };
+
+                      const handlePhoneChange = (value: string) => {
+                        if (!value) {
+                          lastValidPhoneRef.current = "";
+                          field.onChange("");
+                          return;
+                        }
+
+                        // Extract only digits to check length
+                        const digits = value.replace(/\D/g, "");
+                        
+                        // Determine max digits based on the incoming value
+                        const maxDigits = getMaxDigits(value);
+
+                        // If digits exceed the limit, don't update
+                        if (digits.length > maxDigits) {
+                          // Don't update - keep the previous value
+                          // Force the input to use the last valid value
+                          setTimeout(() => {
+                            field.onChange(lastValidPhoneRef.current);
+                          }, 0);
+                          return;
+                        }
+
+                        // Update the last valid value and allow the change
+                        lastValidPhoneRef.current = value;
+                        field.onChange(value);
+                      };
+
+                      // Calculate maxLength based on current value
+                      const currentMaxLength = getMaxDigits(field.value || "");
+
+                      return (
+                        <PhoneInput
+                          value={field.value}
+                          onChange={handlePhoneChange}
+                          defaultCountry="PH"
+                          international
+                          maxLength={currentMaxLength}
+                        />
+                      );
+                    }}
                   />
                 </FormField>
 

@@ -3,10 +3,15 @@ type Config = {
   AWS_SECRET_ACCESS_KEY: string;
   S3_BUCKET_NAME: string;
   AWS_ENDPOINT_URL_S3: string;
-  RESEND_API_KEY: string;
-  ZOOM_ACCOUNT_ID: string;
-  ZOOM_CLIENT_ID: string;
-  ZOOM_CLIENT_SECRET: string;
+  // Gmail SMTP Configuration (Required)
+  SMTP_HOST: string;
+  SMTP_PORT: string;
+  SMTP_USER: string;
+  SMTP_PASSWORD: string;
+  SMTP_FROM: string;
+  ZOOM_ACCOUNT_ID?: string;
+  ZOOM_CLIENT_ID?: string;
+  ZOOM_CLIENT_SECRET?: string;
 };
 
 function envOrThrow(key: string) {
@@ -17,13 +22,23 @@ function envOrThrow(key: string) {
   return value;
 }
 
+function envOrUndefined(key: string) {
+  return process.env[key];
+}
+
 export const config: Config = {
   AWS_ACCESS_KEY_ID: envOrThrow("AWS_ACCESS_KEY_ID"),
   AWS_SECRET_ACCESS_KEY: envOrThrow("AWS_SECRET_ACCESS_KEY"),
   S3_BUCKET_NAME: envOrThrow("S3_BUCKET_NAME"),
   AWS_ENDPOINT_URL_S3: envOrThrow("AWS_ENDPOINT_URL_S3"),
-  RESEND_API_KEY: envOrThrow("RESEND_API_KEY"),
-  ZOOM_ACCOUNT_ID: envOrThrow("ZOOM_ACCOUNT_ID"),
-  ZOOM_CLIENT_ID: envOrThrow("ZOOM_CLIENT_ID"),
-  ZOOM_CLIENT_SECRET: envOrThrow("ZOOM_CLIENT_SECRET"),
+  // Gmail SMTP Configuration (Required)
+  SMTP_HOST: envOrThrow("SMTP_HOST"),
+  SMTP_PORT: envOrThrow("SMTP_PORT"),
+  SMTP_USER: envOrThrow("SMTP_USER"),
+  SMTP_PASSWORD: envOrThrow("SMTP_PASSWORD"),
+  SMTP_FROM: envOrThrow("SMTP_FROM"),
+  // Zoom Configuration (Optional - only needed for online appointments)
+  ZOOM_ACCOUNT_ID: envOrUndefined("ZOOM_ACCOUNT_ID"),
+  ZOOM_CLIENT_ID: envOrUndefined("ZOOM_CLIENT_ID"),
+  ZOOM_CLIENT_SECRET: envOrUndefined("ZOOM_CLIENT_SECRET"),
 };

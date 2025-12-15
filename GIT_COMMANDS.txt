@@ -1,0 +1,46 @@
+===========================================
+MANUAL GIT COMMANDS - RUN ONE BY ONE
+===========================================
+
+STEP 1: Install Git first (if not installed)
+Download from: https://git-scm.com/download/win
+Then restart your terminal.
+
+STEP 2: Initialize Git
+git init
+
+STEP 3: Add remote repository
+git remote add origin https://github.com/crisvin03/cloud-case.git
+
+STEP 4: Stage all files
+git add .
+
+STEP 5: Commit files
+git commit -m "Initial commit: Cloud Case Management System"
+
+STEP 6: Set branch name
+git branch -M main
+
+STEP 7: Push to GitHub
+git push -u origin main
+
+When prompted:
+- Username: Your GitHub username
+- Password: Use a Personal Access Token (get from https://github.com/settings/tokens)
+  - Select "repo" scope
+  - Copy the token and paste it as password
+
+===========================================
+TROUBLESHOOTING
+===========================================
+
+If "remote origin already exists":
+git remote remove origin
+git remote add origin https://github.com/crisvin03/cloud-case.git
+
+If authentication fails:
+- Use Personal Access Token, not password
+- Make sure token has "repo" scope
+
+===========================================
+

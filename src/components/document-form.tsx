@@ -2,6 +2,8 @@
 
 import { Template } from "@/generated/prisma";
 import { useState, useTransition } from "react";
+import { handlePdfResponse } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
 
 export default function DocumentForm({ template }: { template: Template }) {
   const [formData, setFormData] = useState<Record<string, string>>({});
@@ -20,30 +22,36 @@ export default function DocumentForm({ template }: { template: Template }) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Accept": "application/json",
           },
+          credentials: "include", // Include cookies for authentication (important for Brave browser)
+          mode: "cors",
+          cache: "no-cache",
           body: JSON.stringify({ templateId: template.id, data: formData }),
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
         const result = await response.json();
 
-        // Convert base64 to blob and trigger download
-        const byteCharacters = atob(result.pdf);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        if (result.error) {
+          throw new Error(result.error);
         }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "application/pdf" });
 
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = result.filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        if (!result.pdf || !result.filename) {
+          throw new Error("Invalid response from server");
+        }
+
+        // Handle PDF response - triggers download
+        // Compatible with all browsers (Chrome, Firefox, Safari, Edge)
+        handlePdfResponse(result.pdf, result.filename, false);
       } catch (error) {
-        alert("Failed to generate PDF");
+        const errorMessage = error instanceof Error ? error.message : "Failed to generate PDF";
+        console.error("PDF generation error:", error);
+        alert(`Failed to generate PDF: ${errorMessage}`);
       }
     });
   };
@@ -51,9 +59,28 @@ export default function DocumentForm({ template }: { template: Template }) {
   const variables = template.variables as string[];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative">
+      {/* Loading Overlay */}
+      {isPending && (
+        <div className="absolute inset-0 bg-black/10 backdrop-blur-sm z-50 flex items-center justify-center rounded-lg animate-in fade-in duration-200">
+          <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <p className="text-sm font-medium text-gray-700">Generating PDF...</p>
+            <p className="text-xs text-gray-500">This may take a few seconds</p>
+          </div>
+        </div>
+      )}
+      
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 relative">
+        {isPending && (
+          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+              <p className="text-sm text-gray-600">Processing...</p>
+            </div>
+          </div>
+        )}
         <h2 className="text-xl font-semibold mb-4">Fill Template Data</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {variables.map(varName => (
@@ -74,9 +101,16 @@ export default function DocumentForm({ template }: { template: Template }) {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 flex items-center justify-center gap-2"
           >
-            {isPending ? "Generating PDF..." : "Generate PDF"}
+            {isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Generating PDF...</span>
+              </>
+            ) : (
+              "Generate PDF"
+            )}
           </button>
         </form>
       </div>

@@ -4,7 +4,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["@sparticuz/chromium", "puppeteer-core"],
   outputFileTracingIncludes: {
-    "/api/**/*": ["./node_modules/@sparticuz/chromium/bin/*"],
+    "/api/generate-pdf": [
+      "./node_modules/@sparticuz/chromium/bin/chromium",
+      "./node_modules/@sparticuz/chromium/bin/chromium/**/*",
+      "./node_modules/@sparticuz/chromium/lib/**/*",
+    ],
   },
 };
 

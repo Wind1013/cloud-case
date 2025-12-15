@@ -6,7 +6,7 @@ import { CalendarIcon } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { isValidPhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumberSync } from "@/lib/phone-validation";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -44,7 +44,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Gender } from "@/generated/prisma";
-import { PhoneInput } from "@/components/ui/phone-input";
+import { PhoneInputSimple as PhoneInput } from "@/components/ui/phone-input-simple";
 
 const addClientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -57,7 +57,7 @@ const addClientSchema = z.object({
   phone: z
     .string()
     .refine(
-      (value) => !value || isValidPhoneNumber(value, "PH"),
+      (value) => !value || isValidPhoneNumberSync(value, "PH"),
       "Please enter a valid Philippine phone number"
     )
     .optional(),

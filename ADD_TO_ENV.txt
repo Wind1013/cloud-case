@@ -1,0 +1,17 @@
+# Copy these lines to your .env file:
+
+# Enable Gmail SMTP (set to "true")
+SMTP_ENABLED=true
+
+# Gmail SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=cloud.case25@gmail.com
+SMTP_PASSWORD=luebncnyfouzwcca
+SMTP_FROM=cloud.case25@gmail.com
+
+# IMPORTANT: 
+# - The password above has spaces removed: "lueb ncny fouz wcca" → "luebncnyfouzwcca"
+# - Make sure SMTP_ENABLED=true is set
+# - Restart your server after adding these lines
+

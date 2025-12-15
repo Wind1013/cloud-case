@@ -1,5 +1,5 @@
 "use client";
-
+// Zod fix: use issues instead of errors for ZodError
 import { updateAccount } from "@/actions/users";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -21,15 +21,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { sendVerificationEmail } from "@/lib/auth-client";
-import React from "react";
+import { sendVerificationEmail, changeEmail } from "@/lib/auth-client";
+import { isValidPhoneNumberSync } from "@/lib/phone-validation";
+import React, { useRef, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { User } from "@/generated/prisma";
+import { PhoneInputSimple as PhoneInput } from "@/components/ui/phone-input-simple";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { CheckCircle, AlertTriangle } from "lucide-react";
 
 const accountFormSchema = z.object({
   name: z.string().min(2, {
@@ -41,7 +47,15 @@ const accountFormSchema = z.object({
   email: z.email(),
   gender: z.enum(["MALE", "FEMALE"]),
   birthday: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (val) => !val || isValidPhoneNumberSync(val, "PH"),
+      {
+        message: "Please enter a valid Philippine phone number (e.g., 09123456789 or +63 912 345 6789)",
+      }
+    ),
   image: z.string().optional(),
 });
 
@@ -49,11 +63,14 @@ type AccountFormValues = z.infer<typeof accountFormSchema>;
 
 export function AccountClient({ user }: { user: User }) {
   return (
-    <div className="max-w-3xl mx-auto space-y-8 pt-10">
+    <div className="max-w-3xl mx-auto space-y-8 pt-10 px-4">
       <div>
-        <h3 className="text-2xl font-bold tracking-tight">
-          👤 Account Settings
-        </h3>
+        <div className="flex items-center gap-2 mb-2">
+          <UserIcon className="h-6 w-6 text-primary" />
+          <h3 className="text-2xl font-bold tracking-tight">
+            Account Settings
+          </h3>
+        </div>
         <p className="text-sm text-muted-foreground">
           Update your profile information and personal details.
         </p>
@@ -75,7 +92,20 @@ function EmailSection({
   email: string;
   isVerified: boolean;
 }) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
+  const [isChangingEmail, setIsChangingEmail] = useState(false);
+  const [validationError, setValidationError] = useState("");
+  const [showChangeEmailForm, setShowChangeEmailForm] = useState(false);
+
+  const emailSchema = z.object({
+    newEmail: z
+      .email("Please enter a valid email address")
+      .min(1, "Email is required"),
+  });
 
   const handleVerifyEmail = async () => {
     setIsLoading(true);
@@ -90,45 +120,158 @@ function EmailSection({
     }
   };
 
+  const handleChangeEmail = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setMessage("");
+    setIsSuccess(null);
+    setValidationError("");
+    setIsChangingEmail(true);
+
+    try {
+      const validation = emailSchema.safeParse({ newEmail });
+
+      if (!validation.success) {
+        const error = validation.error.issues[0]?.message || "Invalid email";
+        setValidationError(error);
+        setIsChangingEmail(false);
+        return;
+      }
+
+      await changeEmail({
+        newEmail: validation.data.newEmail,
+        callbackURL: "/account",
+      });
+
+      setMessage(
+        `A verification email has been sent to your ${
+          isVerified ? "old" : "new"
+        } email address. Please verify the change.`
+      );
+      setIsSuccess(true);
+      setNewEmail("");
+    } catch (error) {
+      setMessage("Failed to change email. Please try again.");
+      setIsSuccess(false);
+    } finally {
+      setIsChangingEmail(false);
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewEmail(e.target.value);
+    if (validationError) {
+      setValidationError("");
+    }
+  };
+
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex flex-col space-y-1">
-        <p className="font-semibold text-gray-800 dark:text-gray-200">
-          {email}
-        </p>
-        {isVerified ? (
-          <Badge className="w-fit">Verified</Badge>
-        ) : (
-          <Badge className="w-fit" variant="secondary">
-            Unverified
-          </Badge>
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="flex justify-between items-start">
+          <div className="flex flex-col space-y-2">
+            <p className="font-bold text-lg">{email}</p>
+            {isVerified ? (
+              <Badge className="w-fit bg-green-100 text-green-800 hover:bg-green-100">
+                Verified
+              </Badge>
+            ) : (
+              <Badge className="w-fit" variant="secondary">
+                Unverified
+              </Badge>
+            )}
+          </div>
+          <div className="flex gap-2">
+            {!isVerified && (
+              <Button onClick={handleVerifyEmail} disabled={isLoading} variant="default">
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Verify Email
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setShowChangeEmailForm(!showChangeEmailForm)}
+            >
+              Change Email
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push("/account/change-password")}
+            >
+              Change Password
+            </Button>
+          </div>
+        </div>
+
+        {showChangeEmailForm && (
+          <div className="mt-4 p-4 border rounded-lg bg-muted/50">
+            <form onSubmit={handleChangeEmail} className="space-y-3">
+              <div className="space-y-2">
+                <label htmlFor="new-email" className="text-sm font-medium">
+                  New Email
+                </label>
+                <Input
+                  id="new-email"
+                  type="email"
+                  placeholder="Enter your new email"
+                  value={newEmail}
+                  onChange={handleEmailChange}
+                  required
+                  disabled={isChangingEmail}
+                  className={validationError ? "border-red-500" : ""}
+                />
+                {validationError && (
+                  <p className="text-sm text-red-500 mt-1">{validationError}</p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isChangingEmail} size="sm">
+                  {isChangingEmail ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Changing Email...
+                    </>
+                  ) : (
+                    "Submit"
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowChangeEmailForm(false);
+                    setNewEmail("");
+                    setValidationError("");
+                    setMessage("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+
+              {message && (
+                <Alert variant={isSuccess ? "default" : "destructive"}>
+                  {isSuccess ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4" />
+                  )}
+                  <AlertTitle>{isSuccess ? "Success" : "Error"}</AlertTitle>
+                  <AlertDescription>{message}</AlertDescription>
+                </Alert>
+              )}
+            </form>
+          </div>
         )}
-      </div>
-      <div className="flex items-center gap-2">
-        {!isVerified && (
-          <Button onClick={handleVerifyEmail} disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Verify Email
-          </Button>
-        )}
-        <Link
-          href="/account/change-email"
-          className={buttonVariants({ variant: "outline" })}
-        >
-          Change Email
-        </Link>
-        <Link
-          href="/account/change-password"
-          className={buttonVariants({ variant: "outline" })}
-        >
-          Change Password
-        </Link>
       </div>
     </div>
   );
 }
 
 function ProfileForm({ user }: { user: User }) {
+  const lastValidPhoneRef = useRef<string>(user.phone || "");
+
   const form = useForm<AccountFormValues>({
     mode: "all",
     resolver: zodResolver(accountFormSchema),
@@ -146,6 +289,15 @@ function ProfileForm({ user }: { user: User }) {
       email: user.email, // This is needed by the schema
     },
   });
+
+  const phone = form.watch("phone");
+
+  // Update ref when phone value changes (from form)
+  useEffect(() => {
+    if (phone) {
+      lastValidPhoneRef.current = phone;
+    }
+  }, [phone]);
 
   async function onSubmit(data: AccountFormValues) {
     const toastId = toast.loading("Updating account...");
@@ -277,19 +429,70 @@ function ProfileForm({ user }: { user: User }) {
               <FormField
                 control={form.control}
                 name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone Number</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="tel"
-                        placeholder="(+63) 999-123-4567"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  // Calculate max digits based on current or incoming value
+                  const getMaxDigits = (val: string): number => {
+                    if (!val) return 12; // Default for international
+                    const digits = val.replace(/\D/g, "");
+                    
+                    if (digits.startsWith("09")) return 11; // Local mobile: 09XX XXX XXXX
+                    if (digits.startsWith("639") || (digits.startsWith("63") && digits.length >= 3 && digits[2] === "9")) return 12; // International mobile: +63 9XX XXX XXXX (12 digits total)
+                    if (digits.startsWith("0") && /^0[2-8]/.test(digits)) return 10; // Local landline: 0X XXX XXXX
+                    if (digits.startsWith("63") && /^63[2-8]/.test(digits)) return 12; // International landline: +63 X XXX XXXX (12 digits total)
+                    if (val.startsWith("+63")) return 12; // Default for +63 (12 digits total)
+                    return 12; // Default
+                  };
+
+                  const handlePhoneChange = (value: string) => {
+                    if (!value) {
+                      lastValidPhoneRef.current = "";
+                      field.onChange("");
+                      return;
+                    }
+
+                    // Extract only digits to check length
+                    const digits = value.replace(/\D/g, "");
+                    
+                    // Determine max digits based on the incoming value
+                    const maxDigits = getMaxDigits(value);
+
+                    // If digits exceed the limit, don't update
+                    if (digits.length > maxDigits) {
+                      // Don't update - keep the previous value
+                      // Force the input to use the last valid value
+                      setTimeout(() => {
+                        field.onChange(lastValidPhoneRef.current);
+                      }, 0);
+                      return;
+                    }
+
+                    // Update the last valid value and allow the change
+                    lastValidPhoneRef.current = value;
+                    field.onChange(value);
+                  };
+
+                  // Calculate maxLength based on current value
+                  const currentMaxLength = getMaxDigits(field.value || "");
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Phone Number</FormLabel>
+                      <FormControl>
+                        <PhoneInput
+                          value={field.value}
+                          onChange={handlePhoneChange}
+                          defaultCountry="PH"
+                          international
+                          maxLength={currentMaxLength}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter a valid Philippine phone number (e.g., 09123456789 or +63 912 345 6789)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
             </div>
           </div>

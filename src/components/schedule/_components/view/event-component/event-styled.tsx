@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useModal } from "@/providers/modal-context";
 import AddEventModal from "@/components/schedule/_modals/add-event-modal";
 import { AppointmentEvent, CustomEventModal } from "@/types";
-import { TrashIcon, CalendarIcon, ClockIcon } from "lucide-react";
+import { TrashIcon, CalendarIcon, ClockIcon, UserIcon } from "lucide-react";
 import { useScheduler } from "@/providers/schedular-provider";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -22,8 +22,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
-import { User } from "@/generated/prisma";
+import { User, Case } from "@/generated/prisma";
 import { toast } from "sonner";
 
 // Function to format date
@@ -81,14 +82,22 @@ export default function EventStyled({
   onDelete,
   CustomEventModal,
   clients,
+  cases,
 }: {
   event: EventStyledProps;
   CustomEventModal?: CustomEventModal;
   onDelete?: (id: string) => void;
   clients: User[];
+  cases: Case[];
 }) {
   const { setOpen } = useModal();
   const { handlers } = useScheduler();
+  const router = useRouter();
+
+  // Find the client by clientId
+  const client = event?.clientId
+    ? clients.find(c => c.id === event.clientId)
+    : null;
 
   // Determine if delete button should be shown
   // Hide it for minimized events to save space, show on hover instead
@@ -98,9 +107,10 @@ export default function EventStyled({
   function handleEditEvent(event: AppointmentEvent) {
     // Open the modal with the content
     setOpen(
-      <CustomModal title="Edit Event">
+      <CustomModal title="Edit Cases">
         <AddEventModal
           clients={clients}
+          cases={cases}
           CustomAddEventModal={
             CustomEventModal?.CustomAddEventModal?.CustomForm
           }
@@ -173,17 +183,7 @@ export default function EventStyled({
         <div
           onClick={(e: React.MouseEvent<HTMLDivElement>) => {
             e.stopPropagation();
-            handleEditEvent({
-              id: event?.id,
-              title: event?.title,
-              startDate: event?.startDate,
-              endDate: event?.endDate,
-              description: event?.description,
-              variant: event?.variant,
-              clientId: event.clientId,
-              type: event.type,
-              meetingUrl: event.meetingUrl,
-            });
+            router.push(`/appointments/${event?.id}`);
           }}
         >
           <event.CustomEventComponent {...event} />
@@ -192,17 +192,7 @@ export default function EventStyled({
         <div
           onClick={(e: React.MouseEvent<HTMLDivElement>) => {
             e.stopPropagation();
-            handleEditEvent({
-              id: event?.id,
-              title: event?.title,
-              startDate: event?.startDate,
-              endDate: event?.endDate,
-              description: event?.description,
-              variant: event?.variant,
-              clientId: event?.clientId,
-              type: event.type,
-              meetingUrl: event.meetingUrl,
-            });
+            router.push(`/appointments/${event?.id}`);
           }}
           className={cn(
             "w-full p-2 rounded",
@@ -228,6 +218,12 @@ export default function EventStyled({
 
             {!event?.minmized && (
               <div className="text-xs space-y-1 mt-2">
+                {client && (
+                  <div className="flex items-center">
+                    <UserIcon className="mr-1 h-3 w-3" />
+                    {client.name}
+                  </div>
+                )}
                 <div className="flex items-center">
                   <CalendarIcon className="mr-1 h-3 w-3" />
                   {formatDate(event?.startDate)}

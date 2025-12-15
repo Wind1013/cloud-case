@@ -1,42 +1,34 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Loader2, Eye } from "lucide-react";
 
 export default function PreviewButton({ templateId }: { templateId: string }) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handlePreview = async () => {
+  const handlePreview = () => {
     setIsLoading(true);
-    try {
-      const response = await fetch("/api/generate-pdf", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ templateId: templateId, data: {} }),
-      });
-      const { pdf, filename } = await response.json();
-
-      const byteCharacters = atob(pdf);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const file = new Blob([byteArray], { type: "application/pdf" });
-      const fileURL = URL.createObjectURL(file);
-      window.open(fileURL);
-    } catch (error) {
-      alert("Failed to generate preview");
-    } finally {
-      setIsLoading(false);
-    }
+    router.push(`/legal-forms/${templateId}/preview`);
+    // Reset loading state after navigation (in case navigation is delayed)
+    setTimeout(() => setIsLoading(false), 2000);
   };
 
   return (
     <Button onClick={handlePreview} disabled={isLoading}>
-      {isLoading ? "Loading..." : "Preview"}
+      {isLoading ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Loading...
+        </>
+      ) : (
+        <>
+          <Eye className="mr-2 h-4 w-4" />
+          Preview
+        </>
+      )}
     </Button>
   );
 }

@@ -4,7 +4,7 @@ import { getAuthSession } from "./auth";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { config } from "@/config";
-import { client } from "@/lib/tigris-client";
+import { s3Client } from "@/lib/s3-client";
 import { CaseStatus, CaseType, Prisma } from "@/generated/prisma";
 
 // export async function getCases(
@@ -71,25 +71,24 @@ export async function getCases(
     const whereConditions: Prisma.CaseWhereInput[] = [];
 
     if (query) {
+      // MySQL uses default case-insensitive collation (utf8mb4_unicode_ci)
+      // so we don't need the mode option
       whereConditions.push({
         OR: [
           {
             title: {
               contains: query,
-              mode: "insensitive",
             },
           },
           {
             description: {
               contains: query,
-              mode: "insensitive",
             },
           },
           {
             client: {
               name: {
                 contains: query,
-                mode: "insensitive",
               },
             },
           },
@@ -140,19 +139,32 @@ export async function getCaseById(id: string) {
 
     const documentsWithSignedUrls = await Promise.all(
       caseData.documents.map(async doc => {
-        const command = new GetObjectCommand({
-          Bucket: config.S3_BUCKET_NAME,
-          Key: doc.url,
-        });
+        try {
+          const command = new GetObjectCommand({
+            Bucket: config.S3_BUCKET_NAME,
+            Key: doc.url,
+          });
 
-        const signedUrl = await getSignedUrl(client, command, {
-          expiresIn: 3600, // 1 hour
-        });
+          const signedUrl = await getSignedUrl(s3Client, command, {
+            expiresIn: 3600, // 1 hour
+          });
 
-        return {
-          ...doc,
-          signedUrl,
-        };
+          return {
+            ...doc,
+            signedUrl,
+          };
+        } catch (error: any) {
+          console.error(`[CASES] Error generating signed URL for document ${doc.id}:`, {
+            error: error?.message,
+            code: error?.code,
+            documentUrl: doc.url,
+            bucket: config.S3_BUCKET_NAME,
+          });
+          return {
+            ...doc,
+            signedUrl: undefined,
+          };
+        }
       })
     );
 

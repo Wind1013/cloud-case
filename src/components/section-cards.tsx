@@ -13,15 +13,21 @@ import {
 
 interface SectionCardsProps {
   todaysAppointments: number;
+  appointmentsChange: number;
   newClients: number;
+  clientsChange: number;
   pendingCases: number;
+  casesChange: number;
   growthRate: number;
 }
 
 export function SectionCards({
   todaysAppointments,
+  appointmentsChange,
   newClients,
+  clientsChange,
   pendingCases,
+  casesChange,
   growthRate,
 }: SectionCardsProps) {
   return (
@@ -35,17 +41,27 @@ export function SectionCards({
             </CardTitle>
             <CardAction>
               <Badge variant="outline">
-                <IconTrendingUp />
-                +12.5%
+                {appointmentsChange >= 0 ? (
+                  <IconTrendingUp />
+                ) : (
+                  <IconTrendingDown />
+                )}
+                {appointmentsChange >= 0 ? "+" : ""}
+                {appointmentsChange.toFixed(1)}%
               </Badge>
             </CardAction>
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              Trending up this month <IconTrendingUp className="size-4" />
+              {appointmentsChange >= 0 ? "Trending up" : "Trending down"} this week{" "}
+              {appointmentsChange >= 0 ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
             </div>
             <div className="text-muted-foreground">
-              Visitors for the last 6 months
+              Compared to previous week
             </div>
           </CardFooter>
         </Card>
@@ -59,17 +75,27 @@ export function SectionCards({
             </CardTitle>
             <CardAction>
               <Badge variant="outline">
-                <IconTrendingDown />
-                -20%
+                {clientsChange >= 0 ? (
+                  <IconTrendingUp />
+                ) : (
+                  <IconTrendingDown />
+                )}
+                {clientsChange >= 0 ? "+" : ""}
+                {clientsChange.toFixed(1)}%
               </Badge>
             </CardAction>
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              Down 20% this period <IconTrendingDown className="size-4" />
+              {clientsChange >= 0 ? "Up" : "Down"} {Math.abs(clientsChange).toFixed(1)}% this period{" "}
+              {clientsChange >= 0 ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
             </div>
             <div className="text-muted-foreground">
-              Acquisition needs attention
+              Compared to previous 30 days
             </div>
           </CardFooter>
         </Card>
@@ -77,23 +103,33 @@ export function SectionCards({
       <Link href="/cases">
         <Card className="@container/card">
           <CardHeader>
-            <CardDescription>Pretrial Cases</CardDescription>
+            <CardDescription>Total Cases</CardDescription>
             <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
               {pendingCases}
             </CardTitle>
             <CardAction>
               <Badge variant="outline">
-                <IconTrendingUp />
-                +12.5%
+                {casesChange >= 0 ? (
+                  <IconTrendingUp />
+                ) : (
+                  <IconTrendingDown />
+                )}
+                {casesChange >= 0 ? "+" : ""}
+                {casesChange.toFixed(1)}%
               </Badge>
             </CardAction>
           </CardHeader>
           <CardFooter className="flex-col items-start gap-1.5 text-sm">
             <div className="line-clamp-1 flex gap-2 font-medium">
-              Strong user retention <IconTrendingUp className="size-4" />
+              {casesChange >= 0 ? "Increased" : "Decreased"} by {Math.abs(casesChange).toFixed(1)}%{" "}
+              {casesChange >= 0 ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
             </div>
             <div className="text-muted-foreground">
-              Engagement exceed targets
+              Compared to 30 days ago
             </div>
           </CardFooter>
         </Card>

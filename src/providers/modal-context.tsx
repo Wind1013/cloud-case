@@ -34,22 +34,27 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const [modals, setModals] = useState<Record<string, React.ReactNode>>({});
   const [canClose, setCanCloseState] = useState<Record<string, boolean>>({});
 
-  const setOpen = async (
+  const setOpen = (
     modal: React.ReactNode,
     fetchdata?: () => Promise<any>,
     modalId: string = "default"
   ) => {
-    if (fetchdata) {
-      const fetchedData = await fetchdata();
-      console.log("FETCHED", fetchedData);
-      setData(prev => ({ ...prev, [modalId]: fetchedData || null }));
-    }
+    // Open modal immediately - no delay
     setIsOpen(prev => ({ ...prev, [modalId]: true }));
     setModals(prev => ({ ...prev, [modalId]: modal }));
     // Only update canClose if needed.
     setCanCloseState(prev =>
       prev[modalId] === true ? prev : { ...prev, [modalId]: true }
     );
+    // Fetch data in background if provided (non-blocking)
+    if (fetchdata) {
+      fetchdata().then(fetchedData => {
+        console.log("FETCHED", fetchedData);
+        setData(prev => ({ ...prev, [modalId]: fetchedData || null }));
+      }).catch(error => {
+        console.error("Error fetching modal data:", error);
+      });
+    }
   };
 
   const setClose = (modalId: string = "default") => {

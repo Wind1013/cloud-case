@@ -16,12 +16,20 @@ async function ActiveClients({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { query } = await searchParamsCache.parse(searchParams);
-  const clients = await getUsers({ role: UserRole.CLIENT, query });
+  const { query, page, limit } = await searchParamsCache.parse(searchParams);
+  const { data: clients, total } = await getUsers({ role: UserRole.CLIENT, query, page, limit });
+  const searchKey = `${query}-${page}-${limit}`;
 
   return (
-    <Suspense fallback={<TableLoader />}>
-      <ClientDataTable columns={columns as ColumnDef<User>[]} data={clients} />
+    <Suspense key={searchKey} fallback={<TableLoader />}>
+      <ClientDataTable 
+        columns={columns as ColumnDef<User>[]} 
+        data={clients ?? []}
+        total={Number(total)}
+        page={page}
+        limit={limit}
+        query={query}
+      />
     </Suspense>
   );
 }
@@ -31,14 +39,19 @@ async function ArchivedClients({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { query } = await searchParamsCache.parse(searchParams);
-  const clients = await getArchivedUsers({ role: UserRole.CLIENT, query });
+  const { query, page, limit } = await searchParamsCache.parse(searchParams);
+  const { data: clients, total } = await getArchivedUsers({ role: UserRole.CLIENT, query, page, limit });
+  const searchKey = `${query}-${page}-${limit}`;
 
   return (
-    <Suspense fallback={<TableLoader />}>
+    <Suspense key={searchKey} fallback={<TableLoader />}>
       <ClientDataTable
         columns={archivedColumns as ColumnDef<User>[]}
-        data={clients}
+        data={clients ?? []}
+        total={Number(total)}
+        page={page}
+        limit={limit}
+        query={query}
       />
     </Suspense>
   );

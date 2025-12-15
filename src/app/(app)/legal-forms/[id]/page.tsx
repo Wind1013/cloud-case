@@ -1,8 +1,5 @@
 import { getTemplate } from "@/actions/template";
-import { lexicalToHtml } from "@/lib/lexical";
-import Link from "next/link";
-import PreviewButton from "./preview-button";
-import { buttonVariants } from "@/components/ui/button";
+import TemplateViewClient from "./template-view-client";
 
 export default async function ViewTemplatePage({
   params,
@@ -15,40 +12,5 @@ export default async function ViewTemplatePage({
     return <div>Template not found</div>;
   }
 
-  const htmlContent = lexicalToHtml(template.content);
-
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{template.name}</h1>
-        <div className="flex gap-4">
-          <PreviewButton templateId={template.id} />
-          <Link
-            href={`/legal-forms/${template.id}/use`}
-            className={buttonVariants()}
-          >
-            Use Form
-          </Link>
-          <Link
-            href={`/legal-forms/${template.id}/edit`}
-            className={buttonVariants()}
-          >
-            Edit Form
-          </Link>
-        </div>
-      </div>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div
-          className="prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
-          style={{
-            paddingTop: `${template.marginTop}in`,
-            paddingRight: `${template.marginRight}in`,
-            paddingBottom: `${template.marginBottom}in`,
-            paddingLeft: `${template.marginLeft}in`,
-          }}
-        />
-      </div>
-    </div>
-  );
+  return <TemplateViewClient template={template} />;
 }
